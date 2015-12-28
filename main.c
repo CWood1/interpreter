@@ -3,95 +3,10 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum {
-  INTEGER,
-  PLUS,
-  MINUS,
-  END,
-  FIN,
-  ERROR
-} token_e;
+#include "common.h"
+#include "lexer.h"
+#include "parser.h"
 
-typedef struct token {
-  token_e type;
-  union {
-    int iVal;
-    char* errString;
-  } item;
-} token_t;
-
-typedef struct tokenstream {
-  token_t* tok;
-  struct tokenstream* next;
-} tokenstream_t;
-
-typedef struct ast_token {
-  token_e type;
-  union {
-    int iVal;
-    char* errString;
-    struct {
-      struct ast_token* left;
-      struct ast_token* right;
-    } ptrs;
-  } item;
-} ast_token_t;
-
-tokenstream_t* lex(char** line) {
-  tokenstream_t* currentToken = malloc(sizeof(tokenstream_t));
-  currentToken->tok = malloc(sizeof(token_t));
-  currentToken->tok->type = END;
-  // Until we can fill in more details, after lexing the next token, set the token to EOF
-  
-  if(**line == '\0')
-    return currentToken;
-
-  char* lineContents = *line;
-  while(isspace(lineContents[0])) lineContents++;
-
-  if(isdigit(lineContents[0])) {
-    currentToken->tok->type = INTEGER;
-    currentToken->tok->item.iVal = atoi(lineContents);
-
-    while(isdigit((++lineContents)[0]));
-    *line = lineContents;
-
-    return currentToken;
-  } else if(lineContents[0] == '+') {
-    currentToken->tok->type = PLUS;
-    *line = ++lineContents;
-
-    return currentToken;
-  } else if(lineContents[0] == '-') {
-    currentToken->tok->type = MINUS;
-    *line = ++lineContents;
-
-    return currentToken;
-  } else if(lineContents[0] == '.') {
-    currentToken->tok->type = FIN;
-    *line = ++lineContents;
-
-    return currentToken;
-  } else {
-    currentToken->tok->type = ERROR;
-    currentToken->tok->item.errString = "Syntax error.";
-
-    return currentToken;
-  }
-}
-
-tokenstream_t* lexfullline(char* line) {
-  tokenstream_t* head = lex(&line);
-  tokenstream_t* cur = head;
-
-  while(cur->tok->type != END && cur->tok->type != ERROR) {
-    cur->next = lex(&line);
-    cur = cur->next;
-  }
-
-  cur->next = NULL;
-  return head;
-}
 /*
 ast_token_t* parse(tokenstream_t ts) {
   ast_token_t* head = malloc(sizeof(ast_token_t));
@@ -105,60 +20,97 @@ ast_token_t* parse(tokenstream_t ts) {
       break;
     PLUS:
       cur->type = PLUS;
-*/    
+*/
+
+result_t* interpret(ast_t* t) {
+  result_t* res = malloc(sizeof(result_t));
+  
+  switch(t->type) {
+  case AST_INT:
+    res->type = RES_INT;
+    res->item.iVal = t->item.iVal;
+
+    freeast(t);
+    return res;
+  case AST_BINOP:
+    {
+      result_t* lt = interpret(t->item.binop.left);
+
+      if(lt->type == RES_ERROR) {
+	freeast(t);
+	free(res);
+	return lt;
+      }
+      
+      result_t* rt = interpret(t->item.binop.right);
+
+      if(rt->type == RES_ERROR) {
+	freeast(t);
+	free(res);
+	free(lt);
+	return rt;
+      }
+      
+      int l = lt->item.iVal;
+      int r = rt->item.iVal;
+
+      free(lt);
+      free(rt);
+
+      t->item.binop.left = NULL;
+      t->item.binop.right = NULL;
+
+      res->type = RES_INT;
+
+      switch(t->item.binop.type) {
+      case AST_BINOP_ADD:
+        res->item.iVal = l + r;
+	break;
+      case AST_BINOP_SUB:
+	res->item.iVal = l - r;
+	break;
+      case AST_BINOP_MUL:
+	res->item.iVal = l * r;
+	break;
+      case AST_BINOP_DIV:
+	res->item.iVal = l / r;
+	break;
+      }
+
+      freeast(t);
+      return res;
+    }
+  case AST_ERROR:
+    res->type = RES_ERROR;
+    res->item.error = t->item.error;
+
+    freeast(t);
+    return res;
+  }
+}
 
 int main(void) {
   char line[80];
   int done = 0;
 
   while(done == 0) {
-    int first, second;
-    
     printf("calc> ");
     fgets(line, 80, stdin);
 
     tokenstream_t* ts = lexfullline(line);
+    ast_t* ast = parse(ts);
+    result_t* res = interpret(ast);
 
-    switch(ts->tok->type) {
-    case INTEGER:
-      first = ts->tok->item.iVal;
-      ts = ts->next;
-
-      token_e operation = ts->tok->type;
-      ts = ts->next;
-      
-      if(ts->tok->type != INTEGER) {
-	printf("Syntax error - unexpected token.\n");
-	if(ts->tok->type == ERROR) printf("%s\n", ts->tok->item.errString);
-	break;
-      }
-
-      second = ts->tok->item.iVal;
-
-      switch(operation) {
-      case PLUS:
-	printf("%d\n", first + second);
-	break;
-
-      case MINUS:
-	printf("%d\n", first - second);
-	break;
-
-      default:
-	printf("Syntax error - unsupported operation\n");
-	break;
-      }
-      
+    switch(res->type) {
+    case RES_INT:
+      printf("%d\n", res->item.iVal);
       break;
-
-    case FIN:
-      done = 1;
-      break;
-
-    default:
-      printf("Syntax error - unexpected token\n");
+    case RES_ERROR:
+      printf("%s\n", res->item.error);
       break;
     }
+    
+    free(res);
   }
   
   return 0;

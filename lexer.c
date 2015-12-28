@@ -5,80 +5,93 @@
 #include "common.h"
 #include "lexer.h"
 
-tokenstream_t* lex(char** line) {
-  tokenstream_t* currentToken = malloc(sizeof(tokenstream_t));
-  currentToken->tok = malloc(sizeof(token_t));
-  currentToken->tok->type = END;
+token_t* lex(char** line) {
+  token_t* tok = malloc(sizeof(token_t));
+  tok->type = END;
   // Until we can fill in more details, after lexing the next token, set the token to EOF
   
   if(**line == '\0' || **line == '\n')
-    return currentToken;
+    return tok;
 
   char* lineContents = *line;
   while(isspace(lineContents[0])) lineContents++;
 
   if(isdigit(lineContents[0])) {
-    currentToken->tok->type = INTEGER;
-    currentToken->tok->item.iVal = atoi(lineContents);
+    tok->type = INTEGER;
+    tok->item.iVal = atoi(lineContents);
 
     while(isdigit((++lineContents)[0]));
     *line = lineContents;
 
-    return currentToken;
+    return tok;
   } else if(lineContents[0] == '+') {
-    currentToken->tok->type = PLUS;
+    tok->type = PLUS;
     *line = ++lineContents;
 
-    return currentToken;
+    return tok;
   } else if(lineContents[0] == '-') {
-    currentToken->tok->type = MINUS;
+    tok->type = MINUS;
     *line = ++lineContents;
 
-    return currentToken;
+    return tok;
   } else if(lineContents[0] == '*') {
-    currentToken->tok->type = MULTIPLY;
+    tok->type = MULTIPLY;
     *line = ++lineContents;
 
-    return currentToken;
+    return tok;
   } else if(lineContents[0] == '/') {
-    currentToken->tok->type = DIVIDE;
+    tok->type = DIVIDE;
     *line = ++lineContents;
 
-    return currentToken;
+    return tok;
+  } else if(lineContents[0] == '(') {
+    tok->type = LPAREN;
+    *line = ++lineContents;
+
+    return tok;
+  } else if(lineContents[0] == ')') {
+    tok->type = RPAREN;
+    *line = ++lineContents;
+
+    return tok;
   } else if(lineContents[0] == '.') {
-    currentToken->tok->type = FIN;
+    tok->type = FIN;
     *line = ++lineContents;
 
-    return currentToken;
+    return tok;
   } else {
-    currentToken->tok->type = ERROR;
-    currentToken->tok->item.errString = "Syntax error.";
+    tok->type = ERROR;
+    tok->item.errString = "Syntax error.";
 
-    return currentToken;
+    return tok;
   }
 }
 
 tokenstream_t* lexfullline(char* line) {
-  tokenstream_t* head = lex(&line);
-  tokenstream_t* cur = head;
+  tokenstream_t* ts = malloc(sizeof(tokenstream_t));
+  token_t* cur = lex(&line);
 
-  while(cur->tok->type != END && cur->tok->type != ERROR) {
+  ts->head = cur;
+
+  while(cur->type != END && cur->type != ERROR) {
     cur->next = lex(&line);
     cur = cur->next;
   }
 
   cur->next = NULL;
-  return head;
-}
-
-void freetoken(tokenstream_t* ts) {
-  free(ts->tok);
-  free(ts);
+  return ts;
 }
 
 void freetokenstream(tokenstream_t* s) {
-  if(s->next != NULL)
-    freetokenstream(s->next);
+  token_t* cur = s->head;
+  token_t* next = cur->next;
 
-  freetoken(s);
+  while(cur->next != NULL) {
+    free(cur);
+    cur = next;
+    next = cur->next;
+  }
+
+  free(cur);
+  free(s);
 }
