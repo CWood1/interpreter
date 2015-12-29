@@ -7,7 +7,7 @@
 
 token_t* lex(char** line) {
   token_t* tok = malloc(sizeof(token_t));
-  tok->type = END;
+  tok->type = FIN;
   // Until we can fill in more details, after lexing the next token, set the token to EOF
   
   if(**line == '\0' || **line == '\n')
@@ -59,8 +59,8 @@ token_t* lex(char** line) {
     *line = ++lineContents;
 
     return tok;
-  } else if(lineContents[0] == '.') {
-    tok->type = FIN;
+  } else if(lineContents[0] == ';') {
+    tok->type = END;
     *line = ++lineContents;
 
     return tok;
@@ -78,7 +78,7 @@ tokenstream_t* lexfullline(char* line) {
 
   ts->head = cur;
 
-  while(cur->type != END && cur->type != ERROR) {
+  while(cur->type != END && cur->type != ERROR && cur->type != FIN) {
     cur->next = lex(&line);
     cur = cur->next;
   }
