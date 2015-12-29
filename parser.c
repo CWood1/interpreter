@@ -32,6 +32,8 @@ int ismultiplicativeoperation(token_t* t) {
     return 1;
   else if(t->type == DIVIDE)
     return 1;
+  else if(t->type == MODULO)
+    return 1;
   else
     return 0;
 }
@@ -142,6 +144,28 @@ ast_t* factor(tokenstream_t* ts, token_t* t) {
       nextres = malloc(sizeof(ast_t));
       nextres->type = AST_BINOP;
       nextres->item.binop.type = AST_BINOP_DIV;
+      nextres->item.binop.left = res;
+
+      res = nextres;
+      nextres = factor(ts, t);
+      
+      if(nextres->type == AST_ERROR) {
+	freeast(res);
+	return nextres;
+      }
+      
+      t = ts->head;
+      res->item.binop.right = nextres;
+
+      break;
+    case MODULO:
+      ts->head = t->next;
+      free(t);
+      t = ts->head;
+
+      nextres = malloc(sizeof(ast_t));
+      nextres->type = AST_BINOP;
+      nextres->item.binop.type = AST_BINOP_MOD;
       nextres->item.binop.left = res;
 
       res = nextres;

@@ -9,6 +9,7 @@ typedef enum {
   MINUS,
   MULTIPLY,
   DIVIDE,
+  MODULO,
   LPAREN,
   RPAREN,
   END,

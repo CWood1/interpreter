@@ -62,6 +62,9 @@ result_t* interpret(ast_t* t) {
       case AST_BINOP_DIV:
 	res->item.iVal = l / r;
 	break;
+      case AST_BINOP_MOD:
+	res->item.iVal = l % r;
+	break;
       }
 
       freeast(t);

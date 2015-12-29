@@ -26,7 +26,8 @@ typedef enum {
   AST_BINOP_ADD,
   AST_BINOP_SUB,
   AST_BINOP_MUL,
-  AST_BINOP_DIV
+  AST_BINOP_DIV,
+  AST_BINOP_MOD
 } ast_binop_e;
 
 typedef struct ast {

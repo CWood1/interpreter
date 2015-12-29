@@ -44,6 +44,11 @@ token_t* lex(char** line) {
     *line = ++lineContents;
 
     return tok;
+  } else if(lineContents[0] == '%') {
+    tok->type = MODULO;
+    *line = ++lineContents;
+
+    return tok;
   } else if(lineContents[0] == '(') {
     tok->type = LPAREN;
     *line = ++lineContents;
