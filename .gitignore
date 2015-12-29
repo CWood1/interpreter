@@ -31,7 +31,9 @@
 *.i*86
 *.x86_64
 *.hex
-calc
 
 # Debug files
 *.dSYM/
+
+# Build directory
+build/
