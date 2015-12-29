@@ -30,8 +30,8 @@ typedef struct tokenstream {
   token_t* head;
 } tokenstream_t;
 
-token_t* lex(char** line);
-tokenstream_t* lexfullline(char* line);
+token_t* lex(char** line, size_t* sz);
+tokenstream_t* lexfull(char* buf, size_t len);
 void freetokenstream(tokenstream_t* s);
 
 #endif

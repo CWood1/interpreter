@@ -3,7 +3,6 @@
 
 typedef enum {
   RES_INT,
-  RES_EXIT,
   RES_ERROR
 } result_e;
 
@@ -17,6 +16,7 @@ typedef struct result {
 } result_t;
 
 typedef enum {
+  AST_STMT,
   AST_BINOP,
   AST_INT,
   AST_ERROR
@@ -40,6 +40,10 @@ typedef struct ast {
       struct ast* right;
       ast_binop_e type;
     } binop;
+    struct {
+      struct ast* child;
+      struct ast* next;
+    } stmt;
   } item;
 } ast_t;
 

@@ -87,7 +87,6 @@ ast_t* term(tokenstream_t* ts, token_t* t) {
     t = ts->head;
 
     if(isrparen(t) == 0) {
-      freetokenstream(ts);
       freeast(res);
 
       res = malloc(sizeof(ast_t));
@@ -105,9 +104,8 @@ ast_t* term(tokenstream_t* ts, token_t* t) {
   } else {
     res = malloc(sizeof(ast_t));
     res->type = AST_ERROR;
-    res->item.error = "Syntax error - unexpected token\n";
-
-    freetokenstream(ts);
+    
+    res->item.error = "Syntax error - unexpected token \n";
 
     return res;
   }
@@ -266,15 +264,23 @@ ast_t* expr(tokenstream_t* ts, token_t* t) {
 }
 
 ast_t* statement(tokenstream_t* ts, token_t* t) {
-  ast_t* res = expr(ts, t);
+  ast_t* res = malloc(sizeof(ast_t));
+  res->type = AST_STMT;
+  res->item.stmt.child = expr(ts, t);
+  res->item.stmt.next = NULL;
 
-  if(res->type == AST_ERROR)
-    return res;
+  if(res->item.stmt.child->type == AST_ERROR) {
+    ast_t* ret = res->item.stmt.child;
+    free(res);
+    return ret;
+  }
   
   t = ts->head;
 
   if(isend(t)) {
-    freetokenstream(ts);
+    ts->head = t->next;
+    free(t);
+    
     return res;
   } else {
     freeast(res);
@@ -282,20 +288,31 @@ ast_t* statement(tokenstream_t* ts, token_t* t) {
     res = malloc(sizeof(ast_t));
     res->type = AST_ERROR;
     res->item.error = "Syntax error - expected end of statement\n";
-
-    freetokenstream(ts);
+    
     return res;
   }
 }
 
 ast_t* parse(tokenstream_t* ts) {
-  return statement(ts, ts->head);
+  ast_t* res = statement(ts, ts->head);
+  ast_t* ret = res;
+
+  while(res->type == AST_STMT && ts->head->type != FIN) {
+    res->item.stmt.next = statement(ts, ts->head);
+    res = res->item.stmt.next;
+  }
+
+  freetokenstream(ts);
+  return ret;
 }
 
 void freeast(ast_t* t) {
   if(t->type == AST_BINOP) {
     if(t->item.binop.left != NULL) freeast(t->item.binop.left);
     if(t->item.binop.right != NULL) freeast(t->item.binop.right);
+  } else if(t->type == AST_STMT) {
+    if(t->item.stmt.child != NULL) freeast(t->item.stmt.child);
+    if(t->item.stmt.next != NULL) freeast(t->item.stmt.next);
   }
 
   free(t);

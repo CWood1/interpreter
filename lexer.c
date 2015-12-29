@@ -5,63 +5,83 @@
 #include "common.h"
 #include "lexer.h"
 
-token_t* lex(char** line) {
+token_t* lex(char** line, size_t* sz) {
   token_t* tok = malloc(sizeof(token_t));
   tok->type = FIN;
   // Until we can fill in more details, after lexing the next token, set the token to EOF
   
-  if(**line == '\0' || **line == '\n')
+  if(*sz == 0)
     return tok;
 
   char* lineContents = *line;
-  while(isspace(lineContents[0])) lineContents++;
+  while(*sz != 0 && isspace(lineContents[0])) {
+    lineContents++;
+    (*sz)--;
+  }
+
+  if(*sz == 0)
+    return tok;
 
   if(isdigit(lineContents[0])) {
     tok->type = INTEGER;
     tok->item.iVal = atoi(lineContents);
 
-    while(isdigit((++lineContents)[0]));
-    *line = lineContents;
+    (*sz)--;
+    lineContents++;
 
+    while(*sz != 0 && isdigit(lineContents[0])) {
+      (*sz)--;
+      lineContents++;
+    }
+
+    *line = lineContents;
     return tok;
   } else if(lineContents[0] == '+') {
     tok->type = PLUS;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == '-') {
     tok->type = MINUS;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == '*') {
     tok->type = MULTIPLY;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == '/') {
     tok->type = DIVIDE;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == '%') {
     tok->type = MODULO;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == '(') {
     tok->type = LPAREN;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == ')') {
     tok->type = RPAREN;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else if(lineContents[0] == ';') {
     tok->type = END;
     *line = ++lineContents;
+    (*sz)--;
 
     return tok;
   } else {
@@ -72,14 +92,14 @@ token_t* lex(char** line) {
   }
 }
 
-tokenstream_t* lexfullline(char* line) {
+tokenstream_t* lexfull(char* buf, size_t len) {
   tokenstream_t* ts = malloc(sizeof(tokenstream_t));
-  token_t* cur = lex(&line);
+  token_t* cur = lex(&buf, &len);
 
   ts->head = cur;
 
-  while(cur->type != END && cur->type != ERROR && cur->type != FIN) {
-    cur->next = lex(&line);
+  while(cur->type != ERROR && cur->type != FIN) {
+    cur->next = lex(&buf, &len);
     cur = cur->next;
   }
 

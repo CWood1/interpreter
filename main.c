@@ -3,11 +3,14 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <sys/stat.h>
+
 #include "common.h"
 #include "lexer.h"
 #include "parser.h"
 
 result_t* interpret(ast_t* t);
+void interpretloop(ast_t* t);
 
 result_t* interpret(ast_t* t) {
   result_t* res = malloc(sizeof(result_t));
@@ -24,7 +27,6 @@ result_t* interpret(ast_t* t) {
       result_t* lt = interpret(t->item.binop.left);
 
       if(lt->type == RES_ERROR) {
-	freeast(t);
 	free(res);
 	return lt;
       }
@@ -32,7 +34,6 @@ result_t* interpret(ast_t* t) {
       result_t* rt = interpret(t->item.binop.right);
 
       if(rt->type == RES_ERROR) {
-	freeast(t);
 	free(res);
 	free(lt);
 	return rt;
@@ -67,35 +68,32 @@ result_t* interpret(ast_t* t) {
 	break;
       }
 
-      freeast(t);
       return res;
     }
   case AST_ERROR:
     res->type = RES_ERROR;
     res->item.error = t->item.error;
 
-    freeast(t);
     return res;
+  default:
+    break;
   }
 
   res->type = RES_ERROR;
   res->item.error = "Unrecognised AST type.\n";
 
-  freeast(t);
   return res;
 }
 
-int main(void) {
-  char line[80];
-  int done = 0;
-
-  while(done == 0) {
-    printf("calc> ");
-    fgets(line, 80, stdin);
-
-    tokenstream_t* ts = lexfullline(line);
-    ast_t* ast = parse(ts);
-    result_t* res = interpret(ast);
+void interpretloop(ast_t* t) {
+  ast_t* head = t;
+  while(t != NULL) {
+    if(t->type == AST_ERROR) {
+      printf("%s\n", t->item.error);
+      break;
+    }
+    
+    result_t* res = interpret(t->item.stmt.child);
 
     switch(res->type) {
     case RES_INT:
@@ -104,13 +102,50 @@ int main(void) {
     case RES_ERROR:
       printf("%s\n", res->item.error);
       break;
-    case RES_EXIT:
-      done = 1;
-      break;
     }
-    
+
     free(res);
+    
+    t = t->item.stmt.next;
+  }
+
+  freeast(head);
+}
+
+int main(int argc, char** argv) {
+  if(argc != 2) {
+    printf("Expected filename, none found.\n");
+    return 1;
+  }
+
+  struct stat buf;
+  
+  if(stat(argv[1], &buf) != 0) {
+    printf("Unable to open file %s\n", argv[1]);
+    return 1;
+  }
+
+  FILE* source = fopen(argv[1], "r");
+
+  if(source == NULL) {
+    printf("Unable to open file %s\n", argv[1]);
+    return 1;
   }
   
+  char* sourcebuf = malloc(buf.st_size);
+
+  if(sourcebuf == NULL) {
+    printf("Unable to allocate memory for buffer\n");
+    return 1;
+  }
+  
+  fread(sourcebuf, 1, buf.st_size, source);
+  fclose(source);
+
+  tokenstream_t* ts = lexfull(sourcebuf, buf.st_size);
+  ast_t* ast = parse(ts);
+  interpretloop(ast);
+  
+  free(sourcebuf);
   return 0;
 }
