@@ -7,6 +7,8 @@
 int isinteger(token_t* t) {
   if(t->type == INTEGER)
     return 1;
+  else if(t->type == MINUS && t->next->type == INTEGER)
+    return 1;
   else
     return 0;
 }
@@ -58,6 +60,14 @@ ast_t* term(tokenstream_t* ts, token_t* t) {
   if(isinteger(t)) {
     res = malloc(sizeof(ast_t));
     res->type = AST_INT;
+
+    if(t->type == MINUS) {
+      ts->head = t->next;
+      free(t);
+      t = ts->head;
+      t->item.iVal = -(t->item.iVal);
+    }
+    
     res->item.iVal = t->item.iVal;
 
     ts->head = t->next;
