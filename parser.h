@@ -12,7 +12,7 @@ typedef struct result {
 
   union {
     int iVal;
-    char* error;
+    const char* error;
   } item;
 } result_t;
 
@@ -33,7 +33,7 @@ typedef struct ast {
   ast_e type;
   union {
     int iVal;
-    char* error;
+    const char* error;
     struct {
       struct ast* left;
       struct ast* right;
@@ -41,6 +41,18 @@ typedef struct ast {
     } binop;
   } item;
 } ast_t;
+
+int isinteger(token_t* t);
+int isend(token_t* t);
+int isadditiveoperation(token_t* t);
+int ismultiplicativeoperation(token_t* t);
+int islparen(token_t* t);
+int isrparen(token_t* t);
+
+ast_t* term(tokenstream_t* ts, token_t* t);
+ast_t* factor(tokenstream_t* ts, token_t* t);
+ast_t* expr(tokenstream_t* ts, token_t* t);
+ast_t* statement(tokenstream_t* ts, token_t* t);
 
 ast_t* parse(tokenstream_t* ts);
 void freeast(ast_t* a);

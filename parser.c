@@ -4,8 +4,6 @@
 #include "lexer.h"
 #include "parser.h"
 
-ast_t* expr(tokenstream_t* ts, token_t* t);
-
 int isinteger(token_t* t) {
   if(t->type == INTEGER)
     return 1;
@@ -158,6 +156,10 @@ ast_t* factor(tokenstream_t* ts, token_t* t) {
       res->item.binop.right = nextres;
 
       break;
+
+    default:
+      break;
+      // We should never get here...
     }
   }
 
@@ -218,6 +220,10 @@ ast_t* expr(tokenstream_t* ts, token_t* t) {
       t = ts->head;
       res->item.binop.right = nextres;
 
+      break;
+
+    default:
+      // We should never get here...
       break;
     }
   }

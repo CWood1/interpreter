@@ -20,7 +20,7 @@ typedef struct token {
   token_e type;
   union {
     int iVal;
-    char* errString;
+    const char* errString;
   } item;
   struct token* next;
 } token_t;
@@ -29,6 +29,7 @@ typedef struct tokenstream {
   token_t* head;
 } tokenstream_t;
 
+token_t* lex(char** line);
 tokenstream_t* lexfullline(char* line);
 void freetokenstream(tokenstream_t* s);
 

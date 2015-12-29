@@ -7,20 +7,7 @@
 #include "lexer.h"
 #include "parser.h"
 
-/*
-ast_token_t* parse(tokenstream_t ts) {
-  ast_token_t* head = malloc(sizeof(ast_token_t));
-  ast_token_t* cur = head;
-  
-  while(ts->tok->type != EOF) {
-    switch(ts->tok->type) {
-    INTEGER:
-      cur->type = INTEGER;
-      cur->iVal = ts->tok->iVal;
-      break;
-    PLUS:
-      cur->type = PLUS;
-*/
+result_t* interpret(ast_t* t);
 
 result_t* interpret(ast_t* t) {
   result_t* res = malloc(sizeof(result_t));
@@ -87,6 +74,12 @@ result_t* interpret(ast_t* t) {
     freeast(t);
     return res;
   }
+
+  res->type = RES_ERROR;
+  res->item.error = "Unrecognised AST type.\n";
+
+  freeast(t);
+  return res;
 }
 
 int main(void) {
@@ -107,6 +100,9 @@ int main(void) {
       break;
     case RES_ERROR:
       printf("%s\n", res->item.error);
+      break;
+    case RES_EXIT:
+      done = 1;
       break;
     }
     
