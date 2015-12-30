@@ -12,6 +12,9 @@ typedef enum {
   MODULO,
   LPAREN,
   RPAREN,
+  IDENTIFIER,
+  LET,
+  MUT,
   END,
   FIN,
   ERROR
@@ -22,6 +25,7 @@ typedef struct token {
   union {
     int iVal;
     const char* errString;
+    char* identifier;
   } item;
   struct token* next;
 } token_t;

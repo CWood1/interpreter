@@ -9,13 +9,38 @@
 #include "lexer.h"
 #include "parser.h"
 
-result_t* interpret(ast_t* t);
-void interpretloop(ast_t* t);
+result_t* interpret(ast_t* t, vmstate_t* state);
+void interpretloop(ast_t* t, vmstate_t* state);
 
-result_t* interpret(ast_t* t) {
+result_t* interpret(ast_t* t, vmstate_t* state) {
   result_t* res = malloc(sizeof(result_t));
+  vardecl_t* vd;
   
   switch(t->type) {
+  case AST_DECL:
+    if(state->vars == NULL) {
+      state->vars = malloc(sizeof(vardecl_t));
+      vd = state->vars;
+    } else {
+      vd = state->vars;
+
+      while(vd->next != NULL) {
+	vd = vd->next;
+      }
+
+      vd->next = malloc(sizeof(vardecl_t));
+      vd = vd->next;
+    }
+
+    vd->identifier = t->item.decl.ident;
+    vd->mut = t->item.decl.mut;
+    vd->type = VAR_UNKNOWN;
+    vd->next = NULL;
+    
+    res->type = RES_NONE;
+    freeast(t);
+
+    return res;
   case AST_INT:
     res->type = RES_INT;
     res->item.iVal = t->item.iVal;
@@ -24,14 +49,14 @@ result_t* interpret(ast_t* t) {
     return res;
   case AST_BINOP:
     {
-      result_t* lt = interpret(t->item.binop.left);
+      result_t* lt = interpret(t->item.binop.left, state);
 
       if(lt->type == RES_ERROR) {
 	free(res);
 	return lt;
       }
       
-      result_t* rt = interpret(t->item.binop.right);
+      result_t* rt = interpret(t->item.binop.right, state);
 
       if(rt->type == RES_ERROR) {
 	free(res);
@@ -85,7 +110,7 @@ result_t* interpret(ast_t* t) {
   return res;
 }
 
-void interpretloop(ast_t* t) {
+void interpretloop(ast_t* t, vmstate_t* state) {
   ast_t* head = t;
   while(t != NULL) {
     if(t->type == AST_ERROR) {
@@ -93,7 +118,7 @@ void interpretloop(ast_t* t) {
       break;
     }
     
-    result_t* res = interpret(t->item.stmt.child);
+    result_t* res = interpret(t->item.stmt.child, state);
 
     switch(res->type) {
     case RES_INT:
@@ -101,6 +126,8 @@ void interpretloop(ast_t* t) {
       break;
     case RES_ERROR:
       printf("%s\n", res->item.error);
+      break;
+    case RES_NONE:
       break;
     }
 
@@ -144,7 +171,9 @@ int main(int argc, char** argv) {
 
   tokenstream_t* ts = lexfull(sourcebuf, buf.st_size);
   ast_t* ast = parse(ts);
-  interpretloop(ast);
+  vmstate_t* state = malloc(sizeof(vmstate_t));
+  state->vars = NULL;
+  interpretloop(ast, state);
   
   free(sourcebuf);
   return 0;

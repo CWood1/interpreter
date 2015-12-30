@@ -266,16 +266,52 @@ ast_t* expr(tokenstream_t* ts, token_t* t) {
 ast_t* statement(tokenstream_t* ts, token_t* t) {
   ast_t* res = malloc(sizeof(ast_t));
   res->type = AST_STMT;
-  res->item.stmt.child = expr(ts, t);
   res->item.stmt.next = NULL;
 
-  if(res->item.stmt.child->type == AST_ERROR) {
-    ast_t* ret = res->item.stmt.child;
-    free(res);
-    return ret;
-  }
+  if(t->type == LET) {
+    res->item.stmt.child = malloc(sizeof(ast_t));
+    res->item.stmt.child->type = AST_DECL;
+
+    res->item.stmt.child->item.decl.mut = 0;
+
+    ts->head = t->next;
+    free(t);
+    t = ts->head;
+
+    if(t->type == MUT) {
+      res->item.stmt.child->item.decl.mut = 1;
+      
+      ts->head = t->next;
+      free(t);
+      t = ts->head;
+    }
+
+    if(t->type == IDENTIFIER) {
+      res->item.stmt.child->item.decl.ident = t->item.identifier;
+      
+      ts->head = t->next;
+      free(t);
+      t = ts->head;
+    } else {
+      freeast(res);
+
+      res = malloc(sizeof(ast_t));
+      res->type = AST_ERROR;
+      res->item.error = "Syntax error - expected identifier\n";
+
+      return res;
+    }
+  } else {
+    res->item.stmt.child = expr(ts, t);
+
+    if(res->item.stmt.child->type == AST_ERROR) {
+      ast_t* ret = res->item.stmt.child;
+      free(res);
+      return ret;
+    }
   
-  t = ts->head;
+    t = ts->head;
+  }
 
   if(isend(t)) {
     ts->head = t->next;

@@ -3,7 +3,8 @@
 
 typedef enum {
   RES_INT,
-  RES_ERROR
+  RES_ERROR,
+  RES_NONE
 } result_e;
 
 typedef struct result {
@@ -16,10 +17,33 @@ typedef struct result {
 } result_t;
 
 typedef enum {
+  VAR_UNKNOWN,
+  VAR_INT
+} vardecl_e;
+
+typedef struct vardecl {
+  char* identifier;
+  vardecl_e type;
+
+  int mut;
+
+  union {
+    int iVal;
+  } item;
+
+  struct vardecl* next;
+} vardecl_t;
+
+typedef struct vmstate {
+  vardecl_t* vars;
+} vmstate_t;
+
+typedef enum {
   AST_STMT,
   AST_BINOP,
   AST_INT,
-  AST_ERROR
+  AST_ERROR,
+  AST_DECL
 } ast_e;
 
 typedef enum {
@@ -44,6 +68,10 @@ typedef struct ast {
       struct ast* child;
       struct ast* next;
     } stmt;
+    struct {
+      int mut;
+      char* ident;
+    } decl;
   } item;
 } ast_t;
 

@@ -36,6 +36,47 @@ token_t* lex(char** line, size_t* sz) {
 
     *line = lineContents;
     return tok;
+  } else if(isalpha(lineContents[0]) || lineContents[0] == '_') {
+    if(*sz >= 3 && memcmp(lineContents, "let", 3) == 0 &&
+       ((*sz > 3 && isalnum(lineContents[3]) == 0 && lineContents[3] != '_') ||
+	(*sz == 3))) {
+      tok->type = LET;
+
+      (*sz) -= 3;
+      lineContents += 3;
+
+      *line = lineContents;
+      return tok;
+    } else if(*sz >= 3 && memcmp(lineContents, "mut", 3) == 0 &&
+	      ((*sz > 3 && isalnum(lineContents[3]) == 0 && lineContents[3] != '_') ||
+	       (*sz == 3))) {
+      tok->type = MUT;
+
+      (*sz) -= 3;
+      lineContents += 3;
+
+      *line = lineContents;
+      return tok;
+    } else {
+      tok->type = IDENTIFIER;
+      char* identstart = lineContents;
+
+      size_t s = *sz;
+
+      while(isalnum(lineContents[0]) || lineContents[0] == '_') {
+	lineContents++;
+	(*sz)--;
+      }
+
+      s -= *sz;
+
+      tok->item.identifier = malloc(s + 1);
+      memcpy(tok->item.identifier, identstart, s);
+      tok->item.identifier[s] = '\0';
+
+      *line = lineContents;
+      return tok;
+    }
   } else if(lineContents[0] == '+') {
     tok->type = PLUS;
     *line = ++lineContents;
