@@ -125,6 +125,12 @@ token_t* lex(char** line, size_t* sz) {
     (*sz)--;
 
     return tok;
+  } else if(lineContents[0] == '=') {
+    tok->type = EQUALS;
+    *line = ++lineContents;
+    (*sz)--;
+
+    return tok;
   } else {
     tok->type = ERROR;
     tok->item.errString = "Syntax error.";

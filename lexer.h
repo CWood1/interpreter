@@ -15,6 +15,7 @@ typedef enum {
   IDENTIFIER,
   LET,
   MUT,
+  EQUALS,
   END,
   FIN,
   ERROR

@@ -13,6 +13,34 @@ int isinteger(token_t* t) {
     return 0;
 }
 
+int isident(token_t* t) {
+  if(t->type == IDENTIFIER)
+    return 1;
+  else
+    return 0;
+}
+
+int islet(token_t* t) {
+  if(t->type == LET)
+    return 1;
+  else
+    return 0;
+}
+
+int ismut(token_t* t) {
+  if(t->type == MUT)
+    return 1;
+  else
+    return 0;
+}
+
+int isequals(token_t* t) {
+  if(t->type == EQUALS)
+    return 1;
+  else
+    return 0;
+}
+
 int isend(token_t* t) {
   if(t->type == END)
     return 1;
@@ -69,6 +97,16 @@ ast_t* term(tokenstream_t* ts, token_t* t) {
     }
     
     res->item.iVal = t->item.iVal;
+
+    ts->head = t->next;
+    free(t);
+
+    return res;
+  } else if(t->type == IDENTIFIER) {
+    res = malloc(sizeof(ast_t));
+    res->type = AST_IDENT;
+
+    res->item.ident.ident = t->item.identifier;
 
     ts->head = t->next;
     free(t);
@@ -263,44 +301,110 @@ ast_t* expr(tokenstream_t* ts, token_t* t) {
   return res;
 }
 
+ast_t* identifier(tokenstream_t* ts, token_t* t) {
+  ast_t* res = malloc(sizeof(ast_t));
+
+  res->type = AST_IDENT;
+  res->item.ident.ident = t->item.identifier;
+
+  ts->head = t->next;
+  free(t);
+
+  return res;
+}
+
+ast_t* declare(tokenstream_t* ts, token_t* t) {
+  ast_t* res = malloc(sizeof(res));
+  res->type = AST_DECL;
+
+  res->item.decl.mut = 0;
+
+  ts->head = t->next;
+  free(t);
+  t = ts->head;
+
+  if(ismut(t)) {
+    res->item.decl.mut = 1;
+      
+    ts->head = t->next;
+    free(t);
+    t = ts->head;
+  }
+
+  if(isident(t)) {
+    res->item.decl.ident = identifier(ts, t);
+    return res;
+  } else {
+    freeast(res);
+
+    res = malloc(sizeof(ast_t));
+    res->type = AST_ERROR;
+    res->item.error = "Syntax error - expected identifier\n";
+
+    return res;
+  }
+}
+
+ast_t* assignment(tokenstream_t* ts, token_t* t) {
+  ast_t* res = malloc(sizeof(ast_t));
+  res->type = AST_ASSIGN;
+
+  if(islet(t)) {
+    res->item.assign.ident = declare(ts, t);
+  } else {
+    if(isident(t) != 1) {
+      res->type = AST_ERROR;
+      res->item.error = "Syntax error - Expected identifier before assignment\n";
+
+      return res;
+    }
+
+    res->item.assign.ident = identifier(ts, t);
+  }
+
+  t = ts->head;
+
+  if(isequals(t) != 1) {
+    free(res->item.assign.ident);
+    
+    res->type = AST_ERROR;
+    res->item.error = "Syntax error - Identifier must be immediately followed by equals for assignment\n";
+
+    return res;
+  }
+
+  ts->head = t->next;
+  free(t);
+  t = ts->head;
+
+  res->item.assign.value = expr(ts, t);
+    
+  if(res->item.assign.value->type == AST_ERROR) {
+    ast_t* ret = res->item.assign.value;
+    free(res->item.assign.ident);
+    free(res);
+    return ret;
+  }
+  
+  return res;
+}
+
 ast_t* statement(tokenstream_t* ts, token_t* t) {
   ast_t* res = malloc(sizeof(ast_t));
   res->type = AST_STMT;
   res->item.stmt.next = NULL;
 
-  if(t->type == LET) {
-    res->item.stmt.child = malloc(sizeof(ast_t));
-    res->item.stmt.child->type = AST_DECL;
+  if((isident(t) && isequals(t->next)) ||
+     (islet(t))) {
+    res->item.stmt.child = assignment(ts, t);
 
-    res->item.stmt.child->item.decl.mut = 0;
+    if(res->item.stmt.child->type == AST_ERROR) {
+      ast_t* ret = res->item.stmt.child;
+      free(res);
+      return ret;
+    }
 
-    ts->head = t->next;
-    free(t);
     t = ts->head;
-
-    if(t->type == MUT) {
-      res->item.stmt.child->item.decl.mut = 1;
-      
-      ts->head = t->next;
-      free(t);
-      t = ts->head;
-    }
-
-    if(t->type == IDENTIFIER) {
-      res->item.stmt.child->item.decl.ident = t->item.identifier;
-      
-      ts->head = t->next;
-      free(t);
-      t = ts->head;
-    } else {
-      freeast(res);
-
-      res = malloc(sizeof(ast_t));
-      res->type = AST_ERROR;
-      res->item.error = "Syntax error - expected identifier\n";
-
-      return res;
-    }
   } else {
     res->item.stmt.child = expr(ts, t);
 

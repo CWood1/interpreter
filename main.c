@@ -11,6 +11,41 @@
 
 result_t* interpret(ast_t* t, vmstate_t* state);
 void interpretloop(ast_t* t, vmstate_t* state);
+vardecl_t* getvar(char* name, vmstate_t* state);
+vardecl_t* newvar(char* name, vmstate_t* state);
+
+vardecl_t* getvar(char* name, vmstate_t* state) {
+  vardecl_t* vd = state->vars;
+
+  while(vd != NULL &&
+	strcmp(vd->identifier, name) != 0) {
+    vd = vd->next;
+  }
+
+  return vd;
+}
+
+vardecl_t* newvar(char* name, vmstate_t* state) {
+  vardecl_t* vd;
+  
+  if(state->vars == NULL) {
+    state->vars = malloc(sizeof(vardecl_t));
+    vd = state->vars;
+  } else {
+    vd = state->vars;
+
+    while(vd->next != NULL) {
+      vd = vd->next;
+    }
+
+    vd->next = malloc(sizeof(vardecl_t));
+    vd = vd->next;
+  }
+
+  vd->identifier = name;
+
+  return vd;
+}
 
 result_t* interpret(ast_t* t, vmstate_t* state) {
   result_t* res = malloc(sizeof(result_t));
@@ -18,35 +53,139 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
   
   switch(t->type) {
   case AST_DECL:
-    if(state->vars == NULL) {
-      state->vars = malloc(sizeof(vardecl_t));
-      vd = state->vars;
-    } else {
-      vd = state->vars;
+    if(t->item.decl.ident->type != AST_IDENT) {
+      res->type = RES_ERROR;
+      res->item.error = "Syntax error - no identifier found.\n";
 
-      while(vd->next != NULL) {
-	vd = vd->next;
-      }
-
-      vd->next = malloc(sizeof(vardecl_t));
-      vd = vd->next;
+      return res;
     }
 
-    vd->identifier = t->item.decl.ident;
+    vd = getvar(t->item.decl.ident->item.ident.ident, state);
+
+    if(vd != NULL) {
+      res->type = RES_ERROR;
+      res->item.error = "Error - attempted to declare a variable that already exists\n";
+
+      return res;
+    }
+
+    vd = newvar(t->item.decl.ident->item.ident.ident, state);
+    
+    vd->identifier = t->item.decl.ident->item.ident.ident;
     vd->mut = t->item.decl.mut;
     vd->type = VAR_UNKNOWN;
     vd->next = NULL;
     
-    res->type = RES_NONE;
+    res->type = RES_DECL;
+    res->item.decl = vd;
     freeast(t);
 
     return res;
+  case AST_ASSIGN:
+    {
+      if(t->item.assign.ident->type == AST_DECL) {
+	result_t* r = interpret(t->item.assign.ident, state);
+
+	if(r->type == RES_DECL) {
+	  vd = r->item.decl;
+	  free(r);
+	} else if(r->type == RES_ERROR) {
+	  freeast(t);
+	  free(res);
+	  return r;
+	} else {
+	  free(r);
+	  freeast(t);
+
+	  res->type = RES_DECL;
+	  res->item.error = "Something strange happened\n";
+	  return res;
+	}
+      } else {
+	vd = getvar(t->item.assign.ident->item.ident.ident, state);
+
+	if(vd == NULL) {
+	  res->type = RES_ERROR;
+	  res->item.error = "Error - Reference to undefined variable\n";
+
+	  freeast(t);
+	  return res;
+	}
+      }
+
+      result_t* r = interpret(t->item.assign.value, state);
+      if(vd->type == VAR_UNKNOWN) {
+	switch(r->type) {
+	case RES_INT:
+	  vd->type = VAR_INT;
+	  vd->item.iVal = r->item.iVal;
+
+	  free(r);
+	  break;
+	case RES_ERROR:
+	  free(res);
+	  freeast(t);
+	  return r;
+	default:
+	  res->type = RES_ERROR;
+	  res->item.error = "Error - unexpected return type\n";
+
+	  freeast(t);
+	  return res;
+	}
+      } else {
+	switch(vd->type) {
+	case VAR_INT:
+	  if(r->type != RES_INT) {
+	    free(r);
+	    res->type = RES_ERROR;
+	    res->item.error = "Error - Incompatible types between expression and variable\n";
+
+	    freeast(t);
+	    return res;
+	  } else {
+	    vd->item.iVal = r->item.iVal;
+	  }
+	default:
+	  break;
+	}
+      }
+
+      res->type = RES_NONE;
+      freeast(t);
+      return res;
+    }
   case AST_INT:
     res->type = RES_INT;
     res->item.iVal = t->item.iVal;
 
     freeast(t);
     return res;
+  case AST_IDENT:
+    vd = getvar(t->item.ident.ident, state);
+
+    if(vd == NULL) {
+      res->type = RES_ERROR;
+      res->item.error = "Error - Reference to undefined variable\n";
+
+      freeast(t);
+      return res;
+    }
+
+    switch(vd->type) {
+    case VAR_UNKNOWN:
+      res->type = RES_ERROR;
+      res->item.error = "Error - Attempted to reference uninitialised variable\n";
+
+      freeast(t);
+      return res;
+    case VAR_INT:
+      res->type = RES_INT;
+      res->item.iVal = vd->item.iVal;
+
+      freeast(t);
+      return res;
+    }
   case AST_BINOP:
     {
       result_t* lt = interpret(t->item.binop.left, state);
@@ -127,7 +266,7 @@ void interpretloop(ast_t* t, vmstate_t* state) {
     case RES_ERROR:
       printf("%s\n", res->item.error);
       break;
-    case RES_NONE:
+    default:
       break;
     }
 
