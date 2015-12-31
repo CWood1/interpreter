@@ -86,28 +86,18 @@ typedef struct ast {
   } item;
 } ast_t;
 
-int isident(token_t* t);
-int islet(token_t* t);
-int ismut(token_t* t);
-int isequals(token_t* t);
-int isinteger(token_t* t);
-int isend(token_t* t);
-int isadditiveoperation(token_t* t);
-int ismultiplicativeoperation(token_t* t);
-int islparen(token_t* t);
-int isrparen(token_t* t);
+ast_t* statement(ast_t* child);
+ast_t* appendstatement(ast_t* statements, ast_t* newstmt);
+ast_t* assignment(ast_t* ident, ast_t* expr);
+ast_t* declaration(ast_t* ident, int mutable);
+ast_t* identifier(char* ident);
+ast_t* addition(ast_t* left, ast_t* right);
+ast_t* subtraction(ast_t* left, ast_t* right);
+ast_t* multiplication(ast_t* left, ast_t* right);
+ast_t* division(ast_t* left, ast_t* right);
+ast_t* integer(int i);
 
-ast_t* term(tokenstream_t* ts, token_t* t);
-ast_t* factor(tokenstream_t* ts, token_t* t);
-ast_t* expr(tokenstream_t* ts, token_t* t);
-
-ast_t* identifier(tokenstream_t* ts, token_t* t);
-ast_t* declare(tokenstream_t* ts, token_t* t);
-ast_t* assignment(tokenstream_t* ts, token_t* t);
-
-ast_t* statement(tokenstream_t* ts, token_t* t);
-
-ast_t* parse(tokenstream_t* ts);
-void freeast(ast_t* a);
+void printast(ast_t* t);
+void freeast(ast_t* t);
 
 #endif

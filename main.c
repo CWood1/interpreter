@@ -5,14 +5,17 @@
 
 #include <sys/stat.h>
 
-#include "common.h"
-#include "lexer.h"
-#include "parser.h"
+#include "parser_helper.h"
 
 result_t* interpret(ast_t* t, vmstate_t* state);
 void interpretloop(ast_t* t, vmstate_t* state);
 vardecl_t* getvar(char* name, vmstate_t* state);
 vardecl_t* newvar(char* name, vmstate_t* state);
+
+extern int yyparse();
+extern ast_t* prog;
+extern FILE* yyin;
+extern int yydebug;
 
 vardecl_t* getvar(char* name, vmstate_t* state) {
   vardecl_t* vd = state->vars;
@@ -78,7 +81,6 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
     
     res->type = RES_DECL;
     res->item.decl = vd;
-    freeast(t);
 
     return res;
   case AST_ASSIGN:
@@ -90,12 +92,10 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
 	  vd = r->item.decl;
 	  free(r);
 	} else if(r->type == RES_ERROR) {
-	  freeast(t);
 	  free(res);
 	  return r;
 	} else {
 	  free(r);
-	  freeast(t);
 
 	  res->type = RES_DECL;
 	  res->item.error = "Something strange happened\n";
@@ -106,15 +106,15 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
 
 	if(vd == NULL) {
 	  res->type = RES_ERROR;
-	  res->item.error = "Error - Reference to undefined variable\n";
+	  char* s = "Errora - Reference to undefined variable ";
+	  res->item.error = malloc(strlen(s) + strlen(t->item.assign.ident->item.ident.ident) + 2);
+	  sprintf(res->item.error, "%s%s\n", s, t->item.assign.ident->item.ident.ident);
 
-	  freeast(t);
 	  return res;
 	} else if(vd->mut != 1) {
 	  res->type = RES_ERROR;
 	  res->item.error = "Error - Attempted to assign immutable variable\n";
 
-	  freeast(t);
 	  return res;
 	}
       }
@@ -130,13 +130,11 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
 	  break;
 	case RES_ERROR:
 	  free(res);
-	  freeast(t);
 	  return r;
 	default:
 	  res->type = RES_ERROR;
 	  res->item.error = "Error - unexpected return type\n";
 
-	  freeast(t);
 	  return res;
 	}
       } else {
@@ -147,7 +145,6 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
 	    res->type = RES_ERROR;
 	    res->item.error = "Error - Incompatible types between expression and variable\n";
 
-	    freeast(t);
 	    return res;
 	  } else {
 	    vd->item.iVal = r->item.iVal;
@@ -158,23 +155,22 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
       }
 
       res->type = RES_NONE;
-      freeast(t);
       return res;
     }
   case AST_INT:
     res->type = RES_INT;
     res->item.iVal = t->item.iVal;
 
-    freeast(t);
     return res;
   case AST_IDENT:
     vd = getvar(t->item.ident.ident, state);
 
     if(vd == NULL) {
       res->type = RES_ERROR;
-      res->item.error = "Error - Reference to undefined variable\n";
+      char* s = "Error - Reference to undefined variable ";
+      res->item.error = malloc(strlen(s) + strlen(t->item.ident.ident) + 2);
+      sprintf(res->item.error, "%s%s\n", s, t->item.ident.ident);
 
-      freeast(t);
       return res;
     }
 
@@ -183,13 +179,11 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
       res->type = RES_ERROR;
       res->item.error = "Error - Attempted to reference uninitialised variable\n";
 
-      freeast(t);
       return res;
     case VAR_INT:
       res->type = RES_INT;
       res->item.iVal = vd->item.iVal;
 
-      freeast(t);
       return res;
     }
   case AST_BINOP:
@@ -255,9 +249,13 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
   return res;
 }
 
-void interpretloop(ast_t* t, vmstate_t* state) {
-  ast_t* head = t;
-  while(t != NULL) {
+void interpretloop(ast_t* t, vmstate_t* state) {  
+  if(t->type != AST_STMT) {
+    printf("Error - no statement found\n");
+    return;
+  }
+  
+  while(t != NULL && t->type == AST_STMT) {
     if(t->type == AST_ERROR) {
       printf("%s\n", t->item.error);
       break;
@@ -280,8 +278,6 @@ void interpretloop(ast_t* t, vmstate_t* state) {
     
     t = t->item.stmt.next;
   }
-
-  freeast(head);
 }
 
 int main(int argc, char** argv) {
@@ -290,36 +286,13 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  struct stat buf;
+  yydebug = 0;
+  yyin = fopen(argv[1], "r");
+  yyparse();
   
-  if(stat(argv[1], &buf) != 0) {
-    printf("Unable to open file %s\n", argv[1]);
-    return 1;
-  }
-
-  FILE* source = fopen(argv[1], "r");
-
-  if(source == NULL) {
-    printf("Unable to open file %s\n", argv[1]);
-    return 1;
-  }
-  
-  char* sourcebuf = malloc(buf.st_size);
-
-  if(sourcebuf == NULL) {
-    printf("Unable to allocate memory for buffer\n");
-    return 1;
-  }
-  
-  fread(sourcebuf, 1, buf.st_size, source);
-  fclose(source);
-
-  tokenstream_t* ts = lexfull(sourcebuf, buf.st_size);
-  ast_t* ast = parse(ts);
   vmstate_t* state = malloc(sizeof(vmstate_t));
   state->vars = NULL;
-  interpretloop(ast, state);
+  interpretloop(prog, state);
   
-  free(sourcebuf);
   return 0;
 }

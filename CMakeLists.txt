@@ -1,11 +1,18 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 project(rustint)
 
-if(UNIX)
-	if(CMAKE_COMPILER_IS_GNUCC)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wuninitialized -Wconversion -Wstrict-prototypes")
-	endif(CMAKE_COMPILER_IS_GNUCC)
-endif(UNIX)
+find_package(BISON)
+find_package(FLEX)
 
-add_executable(rustint main.c lexer.c parser.c)
+BISON_TARGET(RustParser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
+FLEX_TARGET(RustScanner lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.c)
+ADD_FLEX_BISON_DEPENDENCY(RustScanner RustParser)
+
+include_directories(include)
+
+add_executable(rustint
+	main.c
+	parser_helper.c
+	${BISON_RustParser_OUTPUTS}
+	${FLEX_RustScanner_OUTPUTS})
 INSTALL(TARGETS rustint RUNTIME DESTINATION /usr/bin/)
