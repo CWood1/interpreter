@@ -110,6 +110,12 @@ result_t* interpret(ast_t* t, vmstate_t* state) {
 
 	  freeast(t);
 	  return res;
+	} else if(vd->mut != 1) {
+	  res->type = RES_ERROR;
+	  res->item.error = "Error - Attempted to assign immutable variable\n";
+
+	  freeast(t);
+	  return res;
 	}
       }
 
