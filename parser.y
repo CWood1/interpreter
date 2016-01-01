@@ -5,8 +5,10 @@
   ast_t* prog;
 
   extern int yylex();
+  extern int linenum;
+  
   void yyerror(const char* s) {
-    printf("Error - %s\n", s);
+    printf("Error (line %d) - %s\n", linenum, s);
   }
 %}
 

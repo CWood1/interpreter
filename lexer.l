@@ -3,14 +3,17 @@
 #include <parser_helper.h>
 #include "parser.h"
 
-#define SAVE_TOKEN do { yylval.string = malloc(yyleng + 1); strncpy(yylval.string, yytext, yyleng); } while(0)
+#define SAVE_TOKEN yylval.string = strdup(yytext)
+
+int linenum;
 %}
 
 %option noyywrap
 
 %%
 
-[ \t\n]                    ;
+[ \t]                      ;
+\n                         linenum++;
 "let"                      return TLET;
 "mut"                      return TMUT;
 "="                        return TEQUAL;
