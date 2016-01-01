@@ -88,6 +88,16 @@ ast_t* division(ast_t* left, ast_t* right) {
   return ret;
 }
 
+ast_t* modulo(ast_t* left, ast_t* right) {
+  ast_t* ret = malloc(sizeof(ast_t));
+  ret->type = AST_BINOP;
+  ret->item.binop.type = AST_BINOP_MOD;
+  ret->item.binop.left = left;
+  ret->item.binop.right = right;
+
+  return ret;
+}
+
 ast_t* integer(int i) {
   ast_t* ret = malloc(sizeof(ast_t));
   ret->type = AST_INT;

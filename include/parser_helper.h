@@ -95,6 +95,7 @@ ast_t* addition(ast_t* left, ast_t* right);
 ast_t* subtraction(ast_t* left, ast_t* right);
 ast_t* multiplication(ast_t* left, ast_t* right);
 ast_t* division(ast_t* left, ast_t* right);
+ast_t* modulo(ast_t* left, ast_t* right);
 ast_t* integer(int i);
 
 void printast(ast_t* t);

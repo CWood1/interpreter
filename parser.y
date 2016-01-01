@@ -21,7 +21,7 @@
 %debug
 %error-verbose
 
-%token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TLPAREN TRPAREN
+%token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
 %token <string> TIDENTIFIER
 %token <string> TINTEGER
 
@@ -52,6 +52,7 @@ expr : factor { $$ = $1; }
 factor : term { $$ = $1; }
 | term TMULTIPLY factor { $$ = multiplication($1, $3); }
 | term TDIVIDE factor { $$ = division($1, $3); }
+| term TMOD factor { $$ = modulo($1, $3); }
 
 term : TINTEGER { $$ = integer(atoi($1)); }
 | TMINUS TINTEGER { $$ = integer(-atoi($2)); }

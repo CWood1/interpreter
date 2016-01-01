@@ -22,6 +22,7 @@ int linenum;
 "-"                        return TMINUS;
 "*"                        return TMULTIPLY;
 "/"                        return TDIVIDE;
+"%"                        return TMOD;
 "("                        return TLPAREN;
 ")"                        return TRPAREN;
 [a-zA-Z_][a-zA-Z0-9_]*     SAVE_TOKEN; return TIDENTIFIER;
