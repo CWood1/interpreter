@@ -12,6 +12,7 @@ include_directories(include)
 
 add_executable(rustint
 	main.c
+	interpreter.c
 	parser_helper.c
 	${BISON_RustParser_OUTPUTS}
 	${FLEX_RustScanner_OUTPUTS})
