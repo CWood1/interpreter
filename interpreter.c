@@ -36,6 +36,7 @@ vardecl_t* newvar(char* name, vmstate_t* state) {
   }
 
   vd->identifier = name;
+  vd->initialised = 0;
 
   return vd;
 }
@@ -47,6 +48,16 @@ result_t* interpreter_handledecl(ast_decl_t* t, vmstate_t* state) {
     return res;
 
   res->item.decl->mut = t->mut;
+
+  switch(t->type) {
+  case AST_DECL_TYPE_UNKNOWN:
+    res->item.decl->type = VAR_UNKNOWN;
+    break;
+
+  case AST_DECL_TYPE_I32:
+    res->item.decl->type = VAR_INT;
+    break;
+  }
 
   return res;
 }
@@ -87,6 +98,17 @@ result_t* interpreter_handleident(ast_ident_t* t, vmstate_t* state) {
     res->type = RES_ERROR;
     
     char* s = "Error - Reference to undefined variable ";
+    
+    res->item.error = malloc(strlen(s) + strlen(t->ident) + 2);
+    sprintf(res->item.error, "%s%s\n", s, t->ident);
+
+    return res;
+  }
+
+  if(vd->initialised == 0) {
+    res->type = RES_ERROR;
+    
+    char* s = "Error - Reference to uninitialised variable ";
     
     res->item.error = malloc(strlen(s) + strlen(t->ident) + 2);
     sprintf(res->item.error, "%s%s\n", s, t->ident);
@@ -196,14 +218,8 @@ result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
     
     break;
   case AST_ASSIGN_IDENT:
-    res = interpreter_handleident(t->item.ident, state);
-   
-    if(res->type == RES_ERROR)
-      return res;
+    vd = getvar(t->item.ident->ident, state);
 
-    vd = res->item.decl;
-    free(res);
-  
     if(vd->mut == 0) {
       res = malloc(sizeof(result_t));
       res->type = RES_ERROR;
@@ -228,9 +244,11 @@ result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
   case RES_INT:
     if(vd->type == VAR_INT) {
       vd->item.iVal = res->item.iVal;
+      vd->initialised = 1;
     } else if(vd->type == VAR_UNKNOWN && t->type == AST_ASSIGN_DECL) {
       vd->item.iVal = res->item.iVal;
       vd->type = VAR_INT;
+      vd->initialised = 1;
     } else {
       free(res);
       res = malloc(sizeof(result_t));
@@ -258,6 +276,8 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state) {
     return interpreter_handleassign(t->item.assign, state);
   case AST_STMT_EXPR:
     return interpreter_handleexpr(t->item.expr, state);
+  case AST_STMT_DECL:
+    return interpreter_handledecl(t->item.decl, state);
   }
 }
 

@@ -13,6 +13,7 @@ typedef struct vardecl {
   vardecl_e type;
 
   int mut;
+  int initialised;
 
   union {
     int iVal;

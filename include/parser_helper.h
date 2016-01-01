@@ -1,5 +1,5 @@
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __PARSER_HELPER_H__
+#define __PARSER_HELPER_H__
 
 struct ast_expr;
 
@@ -10,6 +10,11 @@ typedef struct {
 typedef struct {
   int mut;
   ast_ident_t* ident;
+
+  enum {
+    AST_DECL_TYPE_UNKNOWN,
+    AST_DECL_TYPE_I32
+  } type;
 } ast_decl_t;
 
 typedef struct {
@@ -56,12 +61,14 @@ typedef struct ast_expr {
 typedef struct ast_stmt {
   enum {
     AST_STMT_ASSIGN,
-    AST_STMT_EXPR
+    AST_STMT_EXPR,
+    AST_STMT_DECL
   } type;
 
   union {
     ast_assign_t* assign;
     ast_expr_t* expr;
+    ast_decl_t* decl;
   } item;
 
   struct ast_stmt* next;
@@ -69,6 +76,7 @@ typedef struct ast_stmt {
 
 ast_stmt_t* statement_assign(ast_assign_t* assign);
 ast_stmt_t* statement_expr(ast_expr_t* expr);
+ast_stmt_t* statement_decl(ast_decl_t* decl);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
 
 ast_expr_t* expression_int(int val);
@@ -84,6 +92,7 @@ ast_binop_t* modulo(ast_expr_t* left, ast_expr_t* right);
 ast_ident_t* identifier(char* ident);
 
 ast_decl_t* declaration(ast_ident_t* ident, int mutable);
+ast_decl_t* declaration_type_i32(ast_ident_t* ident, int mutable);
 
 ast_assign_t* assignment_ident(ast_ident_t* ident, ast_expr_t* value);
 ast_assign_t* assignment_decl(ast_decl_t* decl, ast_expr_t* value);

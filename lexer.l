@@ -25,6 +25,8 @@ int linenum;
 "%"                        return TMOD;
 "("                        return TLPAREN;
 ")"                        return TRPAREN;
+":"                        return TCOLON;
+"i32"                      return TTYPEI32;
 [a-zA-Z_][a-zA-Z0-9_]*     SAVE_TOKEN; return TIDENTIFIER;
 [0-9]+                     SAVE_TOKEN; return TINTEGER;
 .                          printf("Error - Unrecognised token %s\n", yytext); yyterminate();

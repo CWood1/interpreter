@@ -19,6 +19,14 @@ ast_stmt_t* statement_expr(ast_expr_t* expr) {
   return ret;
 }
 
+ast_stmt_t* statement_decl(ast_decl_t* decl) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_DECL;
+  ret->item.decl = decl;
+
+  return ret;
+}
+
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;
 
@@ -110,6 +118,16 @@ ast_decl_t* declaration(ast_ident_t* ident, int mutable) {
   ast_decl_t* ret = malloc(sizeof(ast_decl_t));
   ret->ident = ident;
   ret->mut = mutable;
+  ret->type = AST_DECL_TYPE_UNKNOWN;
+
+  return ret;
+}
+
+ast_decl_t* declaration_type_i32(ast_ident_t* ident, int mutable) {
+  ast_decl_t* ret = malloc(sizeof(ast_decl_t));
+  ret->ident = ident;
+  ret->mut = mutable;
+  ret->type = AST_DECL_TYPE_I32;
 
   return ret;
 }

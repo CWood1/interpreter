@@ -27,12 +27,13 @@
 %error-verbose
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
+%token <token> TCOLON TTYPEI32
 %token <string> TIDENTIFIER
 %token <string> TINTEGER
 
 %type <stmt> program stmts stmt
 %type <assign> var_assign
-%type <decl> var_decl
+%type <decl> var_decl var_decl_typed
 %type <expr> expr factor term
 %type <ident> ident
 
@@ -45,9 +46,14 @@ stmts : stmt { $$ = $1; }
 
 stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | expr TSTMT { $$ = statement_expr($1); }
+| var_decl_typed TSTMT { $$ = statement_decl($1); }
 
 var_assign : var_decl TEQUAL expr { $$ = assignment_decl($1, $3); }
+| var_decl_typed TEQUAL expr { $$ = assignment_decl($1, $3); }
 | ident TEQUAL expr  { $$ = assignment_ident($1, $3); }
+
+var_decl_typed : TLET ident TCOLON TTYPEI32 { $$ = declaration_type_i32($2, 0); }
+| TLET TMUT ident TCOLON TTYPEI32 { $$ = declaration_type_i32($3, 1); }
 
 var_decl : TLET ident { $$ = declaration($2, 0); }
 | TLET TMUT ident { $$ = declaration($3, 1); }
