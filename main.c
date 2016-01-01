@@ -6,7 +6,7 @@
 #include "interpreter.h"
 
 extern int yyparse();
-extern ast_t* prog;
+extern ast_stmt_t* prog;
 extern FILE* yyin;
 extern int yydebug;
 

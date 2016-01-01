@@ -3,109 +3,135 @@
 
 #include <parser_helper.h>
 
-ast_t* statement(ast_t* child) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_STMT;
-  ret->item.stmt.child = child;
+ast_stmt_t* statement_assign(ast_assign_t* assign) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_ASSIGN;
+  ret->item.assign = assign;
 
   return ret;
 }
 
-ast_t* appendstatement(ast_t* statements, ast_t* newstmt) {
-  ast_t* cur = statements;
+ast_stmt_t* statement_expr(ast_expr_t* expr) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_EXPR;
+  ret->item.expr = expr;
 
-  while(cur->item.stmt.next != NULL) {
-    cur = cur->item.stmt.next;
+  return ret;
+}
+
+ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
+  ast_stmt_t* cur = statements;
+
+  while(cur->next != NULL) {
+    cur = cur->next;
   }
 
-  cur->item.stmt.next = newstmt;
+  cur->next = new;
   return statements;
 }
 
-ast_t* assignment(ast_t* ident, ast_t* expr) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_ASSIGN;
-  ret->item.assign.ident = ident;
-  ret->item.assign.value = expr;
+ast_expr_t* expression_int(int val) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_INT;
+  ret->item.val = val;
 
   return ret;
 }
 
-ast_t* declaration(ast_t* ident, int mutable) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_DECL;
-  ret->item.decl.mut = mutable;
-  ret->item.decl.ident = ident;
+ast_expr_t* expression_binop(ast_binop_t* binop) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_BINOP;
+  ret->item.binop = binop;
 
   return ret;
 }
 
-ast_t* identifier(char* ident) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_IDENT;
-  ret->item.ident.ident = ident;
+ast_expr_t* expression_ident(ast_ident_t* ident) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_IDENT;
+  ret->item.ident = ident;
 
   return ret;
 }
 
-ast_t* addition(ast_t* left, ast_t* right) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_BINOP;
-  ret->item.binop.type = AST_BINOP_ADD;
-  ret->item.binop.left = left;
-  ret->item.binop.right = right;
+ast_binop_t* addition(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_ADD;
+  ret->left = left;
+  ret->right = right;
 
   return ret;
 }
 
-ast_t* subtraction(ast_t* left, ast_t* right) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_BINOP;
-  ret->item.binop.type = AST_BINOP_SUB;
-  ret->item.binop.left = left;
-  ret->item.binop.right = right;
+ast_binop_t* subtraction(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_SUB;
+  ret->left = left;
+  ret->right = right;
 
   return ret;
 }
 
-ast_t* multiplication(ast_t* left, ast_t* right) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_BINOP;
-  ret->item.binop.type = AST_BINOP_MUL;
-  ret->item.binop.left = left;
-  ret->item.binop.right = right;
+ast_binop_t* multiplication(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_MUL;
+  ret->left = left;
+  ret->right = right;
 
   return ret;
 }
 
-ast_t* division(ast_t* left, ast_t* right) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_BINOP;
-  ret->item.binop.type = AST_BINOP_DIV;
-  ret->item.binop.left = left;
-  ret->item.binop.right = right;
+ast_binop_t* division(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_DIV;
+  ret->left = left;
+  ret->right = right;
 
   return ret;
 }
 
-ast_t* modulo(ast_t* left, ast_t* right) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_BINOP;
-  ret->item.binop.type = AST_BINOP_MOD;
-  ret->item.binop.left = left;
-  ret->item.binop.right = right;
+ast_binop_t* modulo(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_MOD;
+  ret->left = left;
+  ret->right = right;
 
   return ret;
 }
 
-ast_t* integer(int i) {
-  ast_t* ret = malloc(sizeof(ast_t));
-  ret->type = AST_INT;
-  ret->item.iVal = i;
+ast_ident_t* identifier(char* ident) {
+  ast_ident_t* ret = malloc(sizeof(ast_ident_t));
+  ret->ident = ident;
 
   return ret;
 }
 
+ast_decl_t* declaration(ast_ident_t* ident, int mutable) {
+  ast_decl_t* ret = malloc(sizeof(ast_decl_t));
+  ret->ident = ident;
+  ret->mut = mutable;
+
+  return ret;
+}
+
+ast_assign_t* assignment_ident(ast_ident_t* ident, ast_expr_t* value) {
+  ast_assign_t* ret = malloc(sizeof(ast_decl_t));
+  ret->type = AST_ASSIGN_IDENT;
+  ret->item.ident = ident;
+  ret->value = value;
+
+  return ret;
+}
+
+ast_assign_t* assignment_decl(ast_decl_t* decl, ast_expr_t* value) {
+  ast_assign_t* ret = malloc(sizeof(ast_decl_t));
+  ret->type = AST_ASSIGN_DECL;
+  ret->item.decl = decl;
+  ret->value = value;
+
+  return ret;
+}
+/*
 void printast(ast_t* t) {
   if(t == NULL) {
     return;
@@ -165,3 +191,4 @@ void freeast(ast_t* t) {
 
   free(t);
 }
+*/

@@ -40,218 +40,230 @@ vardecl_t* newvar(char* name, vmstate_t* state) {
   return vd;
 }
 
-result_t* interpret(ast_t* t, vmstate_t* state) {
-  result_t* res = malloc(sizeof(result_t));
-  vardecl_t* vd;
-  
-  switch(t->type) {
-  case AST_DECL:
-    if(t->item.decl.ident->type != AST_IDENT) {
-      res->type = RES_ERROR;
-      res->item.error = "Syntax error - no identifier found.\n";
+result_t* interpreter_handledecl(ast_decl_t* t, vmstate_t* state) {
+  result_t* res = interpreter_handlenewident(t->ident, state);
 
-      return res;
-    }
-
-    vd = getvar(t->item.decl.ident->item.ident.ident, state);
-
-    if(vd != NULL) {
-      res->type = RES_ERROR;
-      res->item.error = "Error - attempted to declare a variable that already exists\n";
-
-      return res;
-    }
-
-    vd = newvar(t->item.decl.ident->item.ident.ident, state);
-    
-    vd->identifier = t->item.decl.ident->item.ident.ident;
-    vd->mut = t->item.decl.mut;
-    vd->type = VAR_UNKNOWN;
-    vd->next = NULL;
-    
-    res->type = RES_DECL;
-    res->item.decl = vd;
-
+  if(res->type == RES_ERROR)
     return res;
-  case AST_ASSIGN:
-    {
-      if(t->item.assign.ident->type == AST_DECL) {
-	result_t* r = interpret(t->item.assign.ident, state);
 
-	if(r->type == RES_DECL) {
-	  vd = r->item.decl;
-	  free(r);
-	} else if(r->type == RES_ERROR) {
-	  free(res);
-	  return r;
-	} else {
-	  free(r);
-
-	  res->type = RES_DECL;
-	  res->item.error = "Something strange happened\n";
-	  return res;
-	}
-      } else {
-	vd = getvar(t->item.assign.ident->item.ident.ident, state);
-
-	if(vd == NULL) {
-	  res->type = RES_ERROR;
-	  char* s = "Errora - Reference to undefined variable ";
-	  res->item.error = malloc(strlen(s) + strlen(t->item.assign.ident->item.ident.ident) + 2);
-	  sprintf(res->item.error, "%s%s\n", s, t->item.assign.ident->item.ident.ident);
-
-	  return res;
-	} else if(vd->mut != 1) {
-	  res->type = RES_ERROR;
-	  res->item.error = "Error - Attempted to assign immutable variable\n";
-
-	  return res;
-	}
-      }
-
-      result_t* r = interpret(t->item.assign.value, state);
-      if(vd->type == VAR_UNKNOWN) {
-	switch(r->type) {
-	case RES_INT:
-	  vd->type = VAR_INT;
-	  vd->item.iVal = r->item.iVal;
-
-	  free(r);
-	  break;
-	case RES_ERROR:
-	  free(res);
-	  return r;
-	default:
-	  res->type = RES_ERROR;
-	  res->item.error = "Error - unexpected return type\n";
-
-	  return res;
-	}
-      } else {
-	switch(vd->type) {
-	case VAR_INT:
-	  if(r->type != RES_INT) {
-	    free(r);
-	    res->type = RES_ERROR;
-	    res->item.error = "Error - Incompatible types between expression and variable\n";
-
-	    return res;
-	  } else {
-	    vd->item.iVal = r->item.iVal;
-	  }
-	default:
-	  break;
-	}
-      }
-
-      res->type = RES_NONE;
-      return res;
-    }
-  case AST_INT:
-    res->type = RES_INT;
-    res->item.iVal = t->item.iVal;
-
-    return res;
-  case AST_IDENT:
-    vd = getvar(t->item.ident.ident, state);
-
-    if(vd == NULL) {
-      res->type = RES_ERROR;
-      char* s = "Error - Reference to undefined variable ";
-      res->item.error = malloc(strlen(s) + strlen(t->item.ident.ident) + 2);
-      sprintf(res->item.error, "%s%s\n", s, t->item.ident.ident);
-
-      return res;
-    }
-
-    switch(vd->type) {
-    case VAR_UNKNOWN:
-      res->type = RES_ERROR;
-      res->item.error = "Error - Attempted to reference uninitialised variable\n";
-
-      return res;
-    case VAR_INT:
-      res->type = RES_INT;
-      res->item.iVal = vd->item.iVal;
-
-      return res;
-    }
-  case AST_BINOP:
-    {
-      result_t* lt = interpret(t->item.binop.left, state);
-
-      if(lt->type == RES_ERROR) {
-	free(res);
-	return lt;
-      }
-      
-      result_t* rt = interpret(t->item.binop.right, state);
-
-      if(rt->type == RES_ERROR) {
-	free(res);
-	free(lt);
-	return rt;
-      }
-      
-      int l = lt->item.iVal;
-      int r = rt->item.iVal;
-
-      free(lt);
-      free(rt);
-
-      t->item.binop.left = NULL;
-      t->item.binop.right = NULL;
-
-      res->type = RES_INT;
-
-      switch(t->item.binop.type) {
-      case AST_BINOP_ADD:
-        res->item.iVal = l + r;
-	break;
-      case AST_BINOP_SUB:
-	res->item.iVal = l - r;
-	break;
-      case AST_BINOP_MUL:
-	res->item.iVal = l * r;
-	break;
-      case AST_BINOP_DIV:
-	res->item.iVal = l / r;
-	break;
-      case AST_BINOP_MOD:
-	res->item.iVal = l % r;
-	break;
-      }
-
-      return res;
-    }
-  case AST_ERROR:
-    res->type = RES_ERROR;
-    res->item.error = t->item.error;
-
-    return res;
-  default:
-    break;
-  }
-
-  res->type = RES_ERROR;
-  res->item.error = "Unrecognised AST type.\n";
+  res->item.decl->mut = t->mut;
 
   return res;
 }
 
-void interpretloop(ast_t* t, vmstate_t* state) {  
-  if(t->type != AST_STMT) {
-    printf("Error - no statement found\n");
-    return;
+result_t* interpreter_handlenewident(ast_ident_t* t, vmstate_t* state) {
+  result_t* res = malloc(sizeof(result_t));
+  vardecl_t* vd = getvar(t->ident, state);
+
+  if(vd != NULL) {
+    res->type = RES_ERROR;
+
+    char* a = "Error - Variable ";
+    char* b = " already exists\n";
+
+    res->item.error = malloc(strlen(a) + strlen(b) + strlen(t->ident) + 1);
+    sprintf(res->item.error, "%s%s%s", a, t->ident, b);
+
+    return res;
   }
+
+  vd = newvar(t->ident, state);
+  vd->type = VAR_UNKNOWN;
+  vd->next = NULL;
+
+  res->type = RES_DECL;
+  res->item.decl = vd;
+
+  return res;
+}
+
+result_t* interpreter_handleident(ast_ident_t* t, vmstate_t* state) {
+  result_t* res = malloc(sizeof(result_t));
+  vardecl_t* vd;
   
-  while(t != NULL && t->type == AST_STMT) {
-    if(t->type == AST_ERROR) {
-      printf("%s\n", t->item.error);
-      break;
+  vd = getvar(t->ident, state);
+
+  if(vd == NULL) {
+    res->type = RES_ERROR;
+    
+    char* s = "Error - Reference to undefined variable ";
+    
+    res->item.error = malloc(strlen(s) + strlen(t->ident) + 2);
+    sprintf(res->item.error, "%s%s\n", s, t->ident);
+
+    return res;
+  }
+
+  switch(vd->type) {
+  case VAR_UNKNOWN:
+    res->type = RES_ERROR;
+    
+    char* s = "Error - Attempted to reference uninitialised variable ";
+    
+    res->item.error = malloc(strlen(s) + strlen(t->ident) + 2);
+    sprintf(res->item.error, "%s%s\n", s, t->ident);
+    
+    return res;
+  case VAR_INT:
+    res->type = RES_INT;
+    res->item.iVal = vd->item.iVal;
+
+    return res;
+  }
+}
+
+result_t* interpreter_handlebinop(ast_binop_t* t, vmstate_t* state) {
+  result_t* res = malloc(sizeof(result_t));
+  res->type = RES_INT;
+
+  result_t* left = interpreter_handleexpr(t->left, state);
+  result_t* right = interpreter_handleexpr(t->right, state);
+
+  if(left->type == RES_ERROR) {
+    free(res);
+    free(right);
+
+    return left;
+  }
+
+  if(right->type == RES_ERROR) {
+    free(res);
+    free(left);
+
+    return right;
+  }
+
+  switch(t->type) {
+  case AST_BINOP_ADD:
+    res->item.iVal = left->item.iVal + right->item.iVal;
+    break;
+
+  case AST_BINOP_SUB:
+    res->item.iVal = left->item.iVal - right->item.iVal;
+    break;
+
+  case AST_BINOP_MUL:
+    res->item.iVal = left->item.iVal * right->item.iVal;
+    break;
+
+  case AST_BINOP_DIV:
+    res->item.iVal = left->item.iVal / right->item.iVal;
+    break;
+
+  case AST_BINOP_MOD:
+    res->item.iVal = left->item.iVal % right->item.iVal;
+    break;
+  }
+
+  free(left);
+  free(right);
+
+  return res;
+}
+
+result_t* interpreter_handleexpr(ast_expr_t* t, vmstate_t* state) {
+  result_t* res;
+  
+  switch(t->type) {
+  case AST_EXPR_INT:
+    res = malloc(sizeof(result_t));
+    res->type = RES_INT;
+    res->item.iVal = t->item.val;
+
+    return res;
+
+  case AST_EXPR_IDENT:
+    return interpreter_handleident(t->item.ident, state);
+
+  case AST_EXPR_BINOP:
+    return interpreter_handlebinop(t->item.binop, state);
+  }
+}
+
+result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
+  result_t* res;
+  vardecl_t* vd;
+  
+  switch(t->type) {
+  case AST_ASSIGN_DECL:
+    res = interpreter_handledecl(t->item.decl, state);
+       
+    if(res->type == RES_ERROR)
+      return res;
+
+    vd = res->item.decl;
+    free(res);
+    
+    break;
+  case AST_ASSIGN_IDENT:
+    res = interpreter_handleident(t->item.ident, state);
+   
+    if(res->type == RES_ERROR)
+      return res;
+
+    vd = res->item.decl;
+    free(res);
+  
+    if(vd->mut == 0) {
+      res = malloc(sizeof(result_t));
+      res->type = RES_ERROR;
+
+      char* s = "Error - attempted to assign to immutable variable ";
+
+      res->item.error = malloc(strlen(s) + strlen(vd->identifier) + 2);
+      sprintf(res->item.error, "%s%s\n", s, vd->identifier);
+
+      return res;
     }
     
-    result_t* res = interpret(t->item.stmt.child, state);
+    break;
+  }
+
+  res = interpreter_handleexpr(t->value, state);
+
+  if(res->type == RES_ERROR)
+    return res;
+
+  switch(res->type) {
+  case RES_INT:
+    if(vd->type == VAR_INT) {
+      vd->item.iVal = res->item.iVal;
+    } else if(vd->type == VAR_UNKNOWN && t->type == AST_ASSIGN_DECL) {
+      vd->item.iVal = res->item.iVal;
+      vd->type = VAR_INT;
+    } else {
+      free(res);
+      res = malloc(sizeof(result_t));
+
+      res->type = RES_ERROR;
+
+      char* s = "Error - type mismatch when assigning to ";
+      res->item.error = malloc(strlen(s) + strlen(vd->identifier) + 2);
+      sprintf(res->item.error, "%s%s\n", s, vd->identifier);
+
+      return res;
+    }
+  }
+
+  free(res);
+  res = malloc(sizeof(result_t));
+
+  res->type = RES_NONE;
+  return res;
+}
+
+result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state) {
+  switch(t->type) {
+  case AST_STMT_ASSIGN:
+    return interpreter_handleassign(t->item.assign, state);
+  case AST_STMT_EXPR:
+    return interpreter_handleexpr(t->item.expr, state);
+  }
+}
+
+void interpretloop(ast_stmt_t* t, vmstate_t* state) {
+  while(t != NULL) {
+    result_t* res = interpreter_handlestmt(t, state);
 
     switch(res->type) {
     case RES_INT:
@@ -266,6 +278,6 @@ void interpretloop(ast_t* t, vmstate_t* state) {
 
     free(res);
     
-    t = t->item.stmt.next;
+    t = t->next;
   }
 }
