@@ -54,6 +54,8 @@ result_t* interpreter_handleexpr(ast_expr_t* t, vmstate_t* state);
 result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state);
 result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state);
 
+void interpreter_handleblock(ast_block_t* block, vmstate_t* state);
+
 void interpretloop(ast_stmt_t* t, vmstate_t* state);
 
 #endif

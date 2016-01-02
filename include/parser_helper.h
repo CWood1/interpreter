@@ -2,6 +2,7 @@
 #define __PARSER_HELPER_H__
 
 struct ast_expr;
+struct ast_block;
 
 typedef struct {
   char* ident;
@@ -62,22 +63,31 @@ typedef struct ast_stmt {
   enum {
     AST_STMT_ASSIGN,
     AST_STMT_EXPR,
-    AST_STMT_DECL
+    AST_STMT_DECL,
+    AST_STMT_BLOCK
   } type;
 
   union {
     ast_assign_t* assign;
     ast_expr_t* expr;
     ast_decl_t* decl;
+    struct ast_block* block;
   } item;
 
   struct ast_stmt* next;
 } ast_stmt_t;
 
+typedef struct ast_block {
+  ast_stmt_t* first;
+} ast_block_t;
+
 ast_stmt_t* statement_assign(ast_assign_t* assign);
 ast_stmt_t* statement_expr(ast_expr_t* expr);
 ast_stmt_t* statement_decl(ast_decl_t* decl);
+ast_stmt_t* statement_block(ast_block_t* block);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
+
+ast_block_t* block_stmt(ast_stmt_t* first);
 
 ast_expr_t* expression_int(int val);
 ast_expr_t* expression_binop(ast_binop_t* binop);

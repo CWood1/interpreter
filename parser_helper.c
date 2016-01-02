@@ -27,6 +27,14 @@ ast_stmt_t* statement_decl(ast_decl_t* decl) {
   return ret;
 }
 
+ast_stmt_t* statement_block(ast_block_t* block) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_BLOCK;
+  ret->item.block = block;
+
+  return ret;
+}
+
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;
 
@@ -36,6 +44,13 @@ ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
 
   cur->next = new;
   return statements;
+}
+
+ast_block_t* block_stmt(ast_stmt_t* first) {
+  ast_block_t* ret = malloc(sizeof(ast_block_t));
+  ret->first = first;
+
+  return ret;
 }
 
 ast_expr_t* expression_int(int val) {

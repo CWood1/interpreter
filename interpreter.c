@@ -278,6 +278,12 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state) {
     return interpreter_handleexpr(t->item.expr, state);
   case AST_STMT_DECL:
     return interpreter_handledecl(t->item.decl, state);
+  case AST_STMT_BLOCK:
+    interpreter_handleblock(t->item.block, state);
+
+    result_t* ret = malloc(sizeof(result_t));
+    ret->type = RES_NONE;
+    return ret;
   }
 }
 
@@ -300,4 +306,8 @@ void interpretloop(ast_stmt_t* t, vmstate_t* state) {
     
     t = t->next;
   }
+}
+
+void interpreter_handleblock(ast_block_t* block, vmstate_t* state) {
+  interpretloop(block->first, state);
 }

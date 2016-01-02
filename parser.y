@@ -19,6 +19,7 @@
   ast_ident_t* ident;
   ast_decl_t* decl;
   ast_assign_t* assign;
+  ast_block_t* block;
   char* string;
   int token;
 }
@@ -27,7 +28,7 @@
 %error-verbose
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
-%token <token> TCOLON TTYPEI32
+%token <token> TCOLON TTYPEI32 TLBRACE TRBRACE
 %token <string> TIDENTIFIER
 %token <string> TINTEGER
 
@@ -36,10 +37,13 @@
 %type <decl> var_decl var_decl_typed
 %type <expr> expr factor term
 %type <ident> ident
+%type <block> block
 
 %%
 
 program : stmts { prog = $1; }
+
+block : TLBRACE stmts TRBRACE { $$ = block_stmt($2); }
 
 stmts : stmt { $$ = $1; }
 | stmts stmt { $$ = statement_append($1, $2); }
@@ -47,6 +51,7 @@ stmts : stmt { $$ = $1; }
 stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | expr TSTMT { $$ = statement_expr($1); }
 | var_decl_typed TSTMT { $$ = statement_decl($1); }
+| block { $$ = statement_block($1); }
 
 var_assign : var_decl TEQUAL expr { $$ = assignment_decl($1, $3); }
 | var_decl_typed TEQUAL expr { $$ = assignment_decl($1, $3); }
