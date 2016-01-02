@@ -7,25 +7,30 @@
 
 #include "interpreter.h"
 
-vardecl_t* getvar(char* name, vmstate_t* state) {
-  vardecl_t* vd = state->vars;
+vardecl_t* getvar(char* name, scope_t* scope) {
+  if(scope == NULL)
+    return NULL;
+  
+  vardecl_t* vd = scope->vars;
 
-  while(vd != NULL &&
-	strcmp(vd->identifier, name) != 0) {
+  while(vd != NULL && strcmp(vd->identifier, name) != 0) {
     vd = vd->next;
   }
+
+  if(vd == NULL)
+    return getvar(name, scope->parent);
 
   return vd;
 }
 
-vardecl_t* newvar(char* name, vmstate_t* state) {
+vardecl_t* newvar(char* name, scope_t* scope) {
   vardecl_t* vd;
   
-  if(state->vars == NULL) {
-    state->vars = malloc(sizeof(vardecl_t));
-    vd = state->vars;
+  if(scope->vars == NULL) {
+    scope->vars = malloc(sizeof(vardecl_t));
+    vd = scope->vars;
   } else {
-    vd = state->vars;
+    vd = scope->vars;
 
     while(vd->next != NULL) {
       vd = vd->next;
@@ -37,12 +42,13 @@ vardecl_t* newvar(char* name, vmstate_t* state) {
 
   vd->identifier = name;
   vd->initialised = 0;
+  vd->containingScope = scope;
 
   return vd;
 }
 
-result_t* interpreter_handledecl(ast_decl_t* t, vmstate_t* state) {
-  result_t* res = interpreter_handlenewident(t->ident, state);
+result_t* interpreter_handledecl(ast_decl_t* t, scope_t* scope) {
+  result_t* res = interpreter_handlenewident(t->ident, scope);
 
   if(res->type == RES_ERROR)
     return res;
@@ -62,11 +68,11 @@ result_t* interpreter_handledecl(ast_decl_t* t, vmstate_t* state) {
   return res;
 }
 
-result_t* interpreter_handlenewident(ast_ident_t* t, vmstate_t* state) {
+result_t* interpreter_handlenewident(ast_ident_t* t, scope_t* scope) {
   result_t* res = malloc(sizeof(result_t));
-  vardecl_t* vd = getvar(t->ident, state);
+  vardecl_t* vd = getvar(t->ident, scope);
 
-  if(vd != NULL) {
+  if(vd != NULL && vd->containingScope == scope) {
     res->type = RES_ERROR;
 
     char* a = "Error - Variable ";
@@ -78,7 +84,7 @@ result_t* interpreter_handlenewident(ast_ident_t* t, vmstate_t* state) {
     return res;
   }
 
-  vd = newvar(t->ident, state);
+  vd = newvar(t->ident, scope);
   vd->type = VAR_UNKNOWN;
   vd->next = NULL;
 
@@ -88,11 +94,11 @@ result_t* interpreter_handlenewident(ast_ident_t* t, vmstate_t* state) {
   return res;
 }
 
-result_t* interpreter_handleident(ast_ident_t* t, vmstate_t* state) {
+result_t* interpreter_handleident(ast_ident_t* t, scope_t* scope) {
   result_t* res = malloc(sizeof(result_t));
   vardecl_t* vd;
   
-  vd = getvar(t->ident, state);
+  vd = getvar(t->ident, scope);
 
   if(vd == NULL) {
     res->type = RES_ERROR;
@@ -134,12 +140,12 @@ result_t* interpreter_handleident(ast_ident_t* t, vmstate_t* state) {
   }
 }
 
-result_t* interpreter_handlebinop(ast_binop_t* t, vmstate_t* state) {
+result_t* interpreter_handlebinop(ast_binop_t* t, scope_t* scope) {
   result_t* res = malloc(sizeof(result_t));
   res->type = RES_INT;
 
-  result_t* left = interpreter_handleexpr(t->left, state);
-  result_t* right = interpreter_handleexpr(t->right, state);
+  result_t* left = interpreter_handleexpr(t->left, scope);
+  result_t* right = interpreter_handleexpr(t->right, scope);
 
   if(left->type == RES_ERROR) {
     free(res);
@@ -183,7 +189,7 @@ result_t* interpreter_handlebinop(ast_binop_t* t, vmstate_t* state) {
   return res;
 }
 
-result_t* interpreter_handleexpr(ast_expr_t* t, vmstate_t* state) {
+result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope) {
   result_t* res;
   
   switch(t->type) {
@@ -195,20 +201,20 @@ result_t* interpreter_handleexpr(ast_expr_t* t, vmstate_t* state) {
     return res;
 
   case AST_EXPR_IDENT:
-    return interpreter_handleident(t->item.ident, state);
+    return interpreter_handleident(t->item.ident, scope);
 
   case AST_EXPR_BINOP:
-    return interpreter_handlebinop(t->item.binop, state);
+    return interpreter_handlebinop(t->item.binop, scope);
   }
 }
 
-result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
+result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
   result_t* res;
   vardecl_t* vd;
   
   switch(t->type) {
   case AST_ASSIGN_DECL:
-    res = interpreter_handledecl(t->item.decl, state);
+    res = interpreter_handledecl(t->item.decl, scope);
        
     if(res->type == RES_ERROR)
       return res;
@@ -218,7 +224,7 @@ result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
     
     break;
   case AST_ASSIGN_IDENT:
-    vd = getvar(t->item.ident->ident, state);
+    vd = getvar(t->item.ident->ident, scope);
 
     if(vd->mut == 0) {
       res = malloc(sizeof(result_t));
@@ -235,7 +241,7 @@ result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
     break;
   }
 
-  res = interpreter_handleexpr(t->value, state);
+  res = interpreter_handleexpr(t->value, scope);
 
   if(res->type == RES_ERROR)
     return res;
@@ -270,16 +276,16 @@ result_t* interpreter_handleassign(ast_assign_t* t, vmstate_t* state) {
   return res;
 }
 
-result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state) {
+result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
   switch(t->type) {
   case AST_STMT_ASSIGN:
-    return interpreter_handleassign(t->item.assign, state);
+    return interpreter_handleassign(t->item.assign, scope);
   case AST_STMT_EXPR:
-    return interpreter_handleexpr(t->item.expr, state);
+    return interpreter_handleexpr(t->item.expr, scope);
   case AST_STMT_DECL:
-    return interpreter_handledecl(t->item.decl, state);
+    return interpreter_handledecl(t->item.decl, scope);
   case AST_STMT_BLOCK:
-    interpreter_handleblock(t->item.block, state);
+    interpreter_handleblock(t->item.block, scope);
 
     result_t* ret = malloc(sizeof(result_t));
     ret->type = RES_NONE;
@@ -287,9 +293,9 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, vmstate_t* state) {
   }
 }
 
-void interpretloop(ast_stmt_t* t, vmstate_t* state) {
+void interpretloop(ast_stmt_t* t, scope_t* scope) {
   while(t != NULL) {
-    result_t* res = interpreter_handlestmt(t, state);
+    result_t* res = interpreter_handlestmt(t, scope);
 
     switch(res->type) {
     case RES_INT:
@@ -308,6 +314,9 @@ void interpretloop(ast_stmt_t* t, vmstate_t* state) {
   }
 }
 
-void interpreter_handleblock(ast_block_t* block, vmstate_t* state) {
-  interpretloop(block->first, state);
+void interpreter_handleblock(ast_block_t* block, scope_t* scope) {
+  scope_t* newScope = malloc(sizeof(scope_t));
+  newScope->parent = scope;
+  
+  interpretloop(block->first, newScope);
 }

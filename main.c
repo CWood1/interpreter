@@ -20,9 +20,8 @@ int main(int argc, char** argv) {
   yyin = fopen(argv[1], "r");
   yyparse();
   
-  vmstate_t* state = malloc(sizeof(vmstate_t));
-  state->vars = NULL;
-  interpretloop(prog, state);
+  scope_t* global = malloc(sizeof(scope_t));
+  interpretloop(prog, global);
   
   return 0;
 }
