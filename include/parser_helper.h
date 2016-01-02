@@ -35,7 +35,13 @@ typedef struct {
     AST_BINOP_SUB,
     AST_BINOP_MUL,
     AST_BINOP_DIV,
-    AST_BINOP_MOD
+    AST_BINOP_MOD,
+    AST_BINOP_EQUAL,
+    AST_BINOP_NOTEQUAL,
+    AST_BINOP_LESSTHAN,
+    AST_BINOP_GREATERTHAN,
+    AST_BINOP_LESSOREQ,
+    AST_BINOP_GREATEROREQ
   } type;
   
   struct ast_expr* left;
@@ -95,9 +101,17 @@ ast_expr_t* expression_ident(ast_ident_t* ident);
 
 ast_binop_t* addition(ast_expr_t* left, ast_expr_t* right);
 ast_binop_t* subtraction(ast_expr_t* left, ast_expr_t* right);
+
 ast_binop_t* multiplication(ast_expr_t* left, ast_expr_t* right);
 ast_binop_t* division(ast_expr_t* left, ast_expr_t* right);
 ast_binop_t* modulo(ast_expr_t* left, ast_expr_t* right);
+
+ast_binop_t* equalto(ast_expr_t* left, ast_expr_t* right);
+ast_binop_t* notequal(ast_expr_t* left, ast_expr_t* right);
+ast_binop_t* lessthan(ast_expr_t* left, ast_expr_t* right);
+ast_binop_t* greaterthan(ast_expr_t* left, ast_expr_t* right);
+ast_binop_t* lessoreq(ast_expr_t* left, ast_expr_t* right);
+ast_binop_t* greateroreq(ast_expr_t* left, ast_expr_t* right);
 
 ast_ident_t* identifier(char* ident);
 

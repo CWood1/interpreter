@@ -131,6 +131,60 @@ ast_binop_t* modulo(ast_expr_t* left, ast_expr_t* right) {
   return ret;
 }
 
+ast_binop_t* equalto(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_EQUAL;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
+ast_binop_t* notequal(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_NOTEQUAL;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
+ast_binop_t* lessthan(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_LESSTHAN;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
+ast_binop_t* greaterthan(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_GREATERTHAN;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
+ast_binop_t* lessoreq(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_LESSOREQ;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
+ast_binop_t* greateroreq(ast_expr_t* left, ast_expr_t* right) {
+  ast_binop_t* ret = malloc(sizeof(ast_binop_t));
+  ret->type = AST_BINOP_GREATEROREQ;
+  ret->left = left;
+  ret->right = right;
+
+  return ret;
+}
+
 ast_ident_t* identifier(char* ident) {
   ast_ident_t* ret = malloc(sizeof(ast_ident_t));
   ret->ident = ident;

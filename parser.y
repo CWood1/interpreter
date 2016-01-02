@@ -28,14 +28,15 @@
 %error-verbose
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
-%token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE
+%token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE TEQUALTO TNOTEQUAL TLESSTHAN TGREATERTHAN
+%token <token> TLESSOREQ TGREATEROREQ
 %token <string> TIDENTIFIER TTYPE
 %token <string> TINTEGER
 
 %type <stmt> program stmts stmt
 %type <assign> var_assign
 %type <decl> var_decl var_decl_typed
-%type <expr> expr factor term
+%type <expr> expr additive factor term
 %type <ident> ident
 %type <block> block
 
@@ -65,7 +66,15 @@ var_decl : TLET ident { $$ = declaration($2, 0); }
 
 ident : TIDENTIFIER { $$ = identifier($1); }
 
-expr : factor { $$ = $1; }
+expr : additive { $$ = $1; }
+| additive TEQUALTO expr { $$ = expression_binop(equalto($1, $3)); }
+| additive TNOTEQUAL expr { $$ = expression_binop(notequal($1, $3)); }
+| additive TLESSTHAN expr { $$ = expression_binop(lessthan($1, $3)); }
+| additive TGREATERTHAN expr { $$ = expression_binop(greaterthan($1, $3)); }
+| additive TLESSOREQ expr { $$ = expression_binop(lessoreq($1, $3)); }
+| additive TGREATEROREQ expr { $$ = expression_binop(greateroreq($1, $3)); }
+
+additive : factor { $$ = $1; }
 | factor TPLUS expr { $$ = expression_binop(addition($1, $3)); }
 | factor TMINUS expr { $$ = expression_binop(subtraction($1, $3)); }
 

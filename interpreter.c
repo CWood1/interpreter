@@ -184,6 +184,84 @@ result_t* interpreter_handlebinop(ast_binop_t* t, scope_t* scope) {
   case AST_BINOP_MOD:
     res->item.iVal = left->item.iVal % right->item.iVal;
     break;
+
+  case AST_BINOP_EQUAL:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 0;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal == right->item.iVal ? 1 : 0;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = left->item.bVal == right->item.bVal ? 1 : 0;
+    }
+
+    break;
+
+  case AST_BINOP_NOTEQUAL:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 1;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal == right->item.iVal ? 0 : 1;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = left->item.bVal == right->item.bVal ? 0 : 1;
+    }
+
+    break;
+
+  case AST_BINOP_LESSTHAN:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 0;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal < right->item.iVal ? 1 : 0;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = 0;
+    }
+
+    break;
+
+  case AST_BINOP_GREATERTHAN:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 0;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal > right->item.iVal ? 1 : 0;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = 0;
+    }
+
+    break;
+
+  case AST_BINOP_LESSOREQ:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 0;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal <= right->item.iVal ? 1 : 0;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = 0;
+    }
+
+    break;
+
+  case AST_BINOP_GREATEROREQ:
+    res->type = RES_BOOL;
+
+    if(left->type != right->type) {
+      res->item.bVal = 0;
+    } else if(left->type == RES_INT) {
+      res->item.bVal = left->item.iVal >= right->item.iVal ? 1 : 0;
+    } else if(left->type == RES_BOOL) {
+      res->item.bVal = 0;
+    }
+
+    break;
   }
 
   free(left);
