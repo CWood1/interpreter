@@ -55,14 +55,12 @@ result_t* interpreter_handledecl(ast_decl_t* t, scope_t* scope) {
 
   res->item.decl->mut = t->mut;
 
-  switch(t->type) {
-  case AST_DECL_TYPE_UNKNOWN:
+  if(t->type == NULL) {
     res->item.decl->type = VAR_UNKNOWN;
-    break;
-
-  case AST_DECL_TYPE_I32:
+  } else if(strcmp(t->type, "i32") == 0) {
     res->item.decl->type = VAR_INT;
-    break;
+  } else if(strcmp(t->type, "bool") == 0) {
+    res->item.decl->type = VAR_BOOL;
   }
 
   return res;
@@ -137,6 +135,11 @@ result_t* interpreter_handleident(ast_ident_t* t, scope_t* scope) {
     res->item.iVal = vd->item.iVal;
 
     return res;
+  case VAR_BOOL:
+    res->type = RES_BOOL;
+    res->item.bVal = vd->item.bVal;
+
+    return res;
   }
 }
 
@@ -200,6 +203,13 @@ result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope) {
 
     return res;
 
+  case AST_EXPR_BOOL:
+    res = malloc(sizeof(result_t));
+    res->type = RES_BOOL;
+    res->item.bVal = t->item.bVal;
+
+    return res;
+    
   case AST_EXPR_IDENT:
     return interpreter_handleident(t->item.ident, scope);
 
@@ -267,6 +277,26 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
 
       return res;
     }
+  case RES_BOOL:
+    if(vd->type == VAR_BOOL) {
+      vd->item.bVal = res->item.bVal;
+      vd->initialised = 1;
+    } else if(vd->type == VAR_UNKNOWN && t->type == AST_ASSIGN_DECL) {
+      vd->item.bVal = res->item.bVal;
+      vd->type = VAR_BOOL;
+      vd->initialised = 1;
+    } else {
+      free(res);
+      res = malloc(sizeof(result_t));
+
+      res->type = RES_ERROR;
+
+      char* s = "Error - type mismatch when assigning to ";
+      res->item.error = malloc(strlen(s) + strlen(vd->identifier) + 2);
+      sprintf(res->item.error, "%s%s\n", s, vd->identifier);
+
+      return res;
+    }
   }
 
   free(res);
@@ -300,6 +330,9 @@ void interpretloop(ast_stmt_t* t, scope_t* scope) {
     switch(res->type) {
     case RES_INT:
       printf("%d\n", res->item.iVal);
+      break;
+    case RES_BOOL:
+      printf("%s\n", res->item.bVal == 1 ? "true" : "false");
       break;
     case RES_ERROR:
       printf("%s\n", res->item.error);

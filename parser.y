@@ -28,8 +28,8 @@
 %error-verbose
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
-%token <token> TCOLON TTYPEI32 TLBRACE TRBRACE
-%token <string> TIDENTIFIER
+%token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE
+%token <string> TIDENTIFIER TTYPE
 %token <string> TINTEGER
 
 %type <stmt> program stmts stmt
@@ -57,8 +57,8 @@ var_assign : var_decl TEQUAL expr { $$ = assignment_decl($1, $3); }
 | var_decl_typed TEQUAL expr { $$ = assignment_decl($1, $3); }
 | ident TEQUAL expr  { $$ = assignment_ident($1, $3); }
 
-var_decl_typed : TLET ident TCOLON TTYPEI32 { $$ = declaration_type_i32($2, 0); }
-| TLET TMUT ident TCOLON TTYPEI32 { $$ = declaration_type_i32($3, 1); }
+var_decl_typed : TLET ident TCOLON TTYPE { $$ = declaration_type($2, 0, $4); }
+| TLET TMUT ident TCOLON TTYPE { $$ = declaration_type($3, 1, $5); }
 
 var_decl : TLET ident { $$ = declaration($2, 0); }
 | TLET TMUT ident { $$ = declaration($3, 1); }
@@ -75,6 +75,8 @@ factor : term { $$ = $1; }
 | term TMOD factor { $$ = expression_binop(modulo($1, $3)); }
 
 term : TINTEGER { $$ = expression_int(atoi($1)); }
+| TTRUE { $$ = expression_bool(1); }
+| TFALSE { $$ = expression_bool(0); }
 | TMINUS TINTEGER { $$ = expression_int(-atoi($2)); }
 | ident { $$ = expression_ident($1); }
 | TLPAREN expr TRPAREN { $$ = $2; }

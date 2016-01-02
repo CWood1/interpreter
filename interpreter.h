@@ -7,6 +7,7 @@ struct scope;
 
 typedef enum {
   VAR_UNKNOWN,
+  VAR_BOOL,
   VAR_INT
 } vardecl_e;
 
@@ -19,6 +20,7 @@ typedef struct vardecl {
 
   union {
     int iVal;
+    int bVal;
   } item;
 
   struct vardecl* next;
@@ -27,6 +29,7 @@ typedef struct vardecl {
 
 typedef enum {
   RES_INT,
+  RES_BOOL,
   RES_ERROR,
   RES_DECL,
   RES_NONE
@@ -37,6 +40,7 @@ typedef struct result {
 
   union {
     int iVal;
+    int bVal;
     char* error;
     vardecl_t* decl;
   } item;

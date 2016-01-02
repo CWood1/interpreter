@@ -12,10 +12,7 @@ typedef struct {
   int mut;
   ast_ident_t* ident;
 
-  enum {
-    AST_DECL_TYPE_UNKNOWN,
-    AST_DECL_TYPE_I32
-  } type;
+  char* type;
 } ast_decl_t;
 
 typedef struct {
@@ -48,12 +45,14 @@ typedef struct {
 typedef struct ast_expr {
   enum {
     AST_EXPR_INT,
+    AST_EXPR_BOOL,
     AST_EXPR_BINOP,
     AST_EXPR_IDENT
   } type;
 
   union {
     int val;
+    int bVal;
     ast_binop_t* binop;
     ast_ident_t* ident;
   } item;
@@ -90,6 +89,7 @@ ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
 ast_block_t* block_stmt(ast_stmt_t* first);
 
 ast_expr_t* expression_int(int val);
+ast_expr_t* expression_bool(int val);
 ast_expr_t* expression_binop(ast_binop_t* binop);
 ast_expr_t* expression_ident(ast_ident_t* ident);
 
@@ -102,7 +102,7 @@ ast_binop_t* modulo(ast_expr_t* left, ast_expr_t* right);
 ast_ident_t* identifier(char* ident);
 
 ast_decl_t* declaration(ast_ident_t* ident, int mutable);
-ast_decl_t* declaration_type_i32(ast_ident_t* ident, int mutable);
+ast_decl_t* declaration_type(ast_ident_t* ident, int mutable, char* type);
 
 ast_assign_t* assignment_ident(ast_ident_t* ident, ast_expr_t* value);
 ast_assign_t* assignment_decl(ast_decl_t* decl, ast_expr_t* value);

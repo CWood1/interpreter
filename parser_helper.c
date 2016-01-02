@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <parser_helper.h>
 
@@ -57,6 +58,14 @@ ast_expr_t* expression_int(int val) {
   ast_expr_t* ret = malloc(sizeof(ast_expr_t));
   ret->type = AST_EXPR_INT;
   ret->item.val = val;
+
+  return ret;
+}
+
+ast_expr_t* expression_bool(int val) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_BOOL;
+  ret->item.bVal = val;
 
   return ret;
 }
@@ -133,16 +142,16 @@ ast_decl_t* declaration(ast_ident_t* ident, int mutable) {
   ast_decl_t* ret = malloc(sizeof(ast_decl_t));
   ret->ident = ident;
   ret->mut = mutable;
-  ret->type = AST_DECL_TYPE_UNKNOWN;
+  ret->type = NULL;
 
   return ret;
 }
 
-ast_decl_t* declaration_type_i32(ast_ident_t* ident, int mutable) {
+ast_decl_t* declaration_type(ast_ident_t* ident, int mutable, char* type) {
   ast_decl_t* ret = malloc(sizeof(ast_decl_t));
   ret->ident = ident;
   ret->mut = mutable;
-  ret->type = AST_DECL_TYPE_I32;
+  ret->type = strdup(type);
 
   return ret;
 }
