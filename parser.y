@@ -20,6 +20,7 @@
   ast_decl_t* decl;
   ast_assign_t* assign;
   ast_block_t* block;
+  ast_cond_t* cond;
   char* string;
   int token;
 }
@@ -29,7 +30,7 @@
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
 %token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE TEQUALTO TNOTEQUAL TLESSTHAN TGREATERTHAN
-%token <token> TLESSOREQ TGREATEROREQ
+%token <token> TLESSOREQ TGREATEROREQ TIF TELSE
 %token <string> TIDENTIFIER TTYPE
 %token <string> TINTEGER
 
@@ -39,6 +40,7 @@
 %type <expr> expr additive factor term
 %type <ident> ident
 %type <block> block
+%type <cond> ifblock
 
 %%
 
@@ -53,6 +55,11 @@ stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | expr TSTMT { $$ = statement_expr($1); }
 | var_decl_typed TSTMT { $$ = statement_decl($1); }
 | block { $$ = statement_block($1); }
+| ifblock { $$ = statement_conditional($1); }
+
+ifblock : TIF expr block { $$ = conditional($2, $3); }
+| TIF expr block TELSE block { $$ = conditional_else($2, $3, $5); }
+| TIF expr block TELSE ifblock { $$ = conditional_elif($2, $3, $5); }
 
 var_assign : var_decl TEQUAL expr { $$ = assignment_decl($1, $3); }
 | var_decl_typed TEQUAL expr { $$ = assignment_decl($1, $3); }

@@ -16,6 +16,8 @@ int linenum;
 \n                         linenum++;
 "let"                      return TLET;
 "mut"                      return TMUT;
+"if"                       return TIF;
+"else"                     return TELSE;
 "i32"|"bool"               SAVE_TOKEN; return TTYPE;
 "true"                     return TTRUE;
 "false"                    return TFALSE;

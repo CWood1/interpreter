@@ -384,6 +384,42 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
   return res;
 }
 
+result_t* interpreter_handlecond(ast_cond_t* t, scope_t* scope) {
+  result_t* expr = interpreter_handleexpr(t->expr, scope);
+
+  if(expr->type == RES_BOOL && expr->item.bVal == 1) {
+    free(expr);
+    interpreter_handleblock(t->block, scope);
+  } else if(expr->type != RES_BOOL) {
+    free(expr);
+
+    result_t* res = malloc(sizeof(result_t));
+    res->type = RES_ERROR;
+    res->item.error = strdup("Error - Attempted to branch on non-boolean value\n");
+
+    return res;
+  } else {
+    free(expr);
+    
+    switch(t->type) {
+    case AST_COND_BARE:
+      break;
+
+    case AST_COND_ELSE:
+      interpreter_handleblock(t->item.elseblk, scope);
+      break;
+
+    case AST_COND_ELIF:
+      interpreter_handlecond(t->item.elseif, scope);
+      break;
+    }
+  }
+  
+  result_t* res = malloc(sizeof(result_t));
+  res->type = RES_NONE;
+  return res;
+}
+
 result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
   switch(t->type) {
   case AST_STMT_ASSIGN:
@@ -398,6 +434,9 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
     result_t* ret = malloc(sizeof(result_t));
     ret->type = RES_NONE;
     return ret;
+
+  case AST_STMT_COND:
+    return interpreter_handlecond(t->item.cond, scope);
   }
 }
 

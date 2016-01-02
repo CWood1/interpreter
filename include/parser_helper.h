@@ -3,6 +3,7 @@
 
 struct ast_expr;
 struct ast_block;
+struct ast_cond;
 
 typedef struct {
   char* ident;
@@ -69,7 +70,8 @@ typedef struct ast_stmt {
     AST_STMT_ASSIGN,
     AST_STMT_EXPR,
     AST_STMT_DECL,
-    AST_STMT_BLOCK
+    AST_STMT_BLOCK,
+    AST_STMT_COND
   } type;
 
   union {
@@ -77,6 +79,7 @@ typedef struct ast_stmt {
     ast_expr_t* expr;
     ast_decl_t* decl;
     struct ast_block* block;
+    struct ast_cond* cond;
   } item;
 
   struct ast_stmt* next;
@@ -86,11 +89,32 @@ typedef struct ast_block {
   ast_stmt_t* first;
 } ast_block_t;
 
+typedef struct ast_cond {
+  enum {
+    AST_COND_BARE,
+    AST_COND_ELSE,
+    AST_COND_ELIF
+  } type;
+
+  ast_block_t* block;
+  ast_expr_t* expr;
+
+  union {
+    ast_block_t* elseblk;
+    struct ast_cond* elseif;
+  } item;
+} ast_cond_t;
+
 ast_stmt_t* statement_assign(ast_assign_t* assign);
 ast_stmt_t* statement_expr(ast_expr_t* expr);
 ast_stmt_t* statement_decl(ast_decl_t* decl);
 ast_stmt_t* statement_block(ast_block_t* block);
+ast_stmt_t* statement_conditional(ast_cond_t* cond);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
+
+ast_cond_t* conditional(ast_expr_t* expr, ast_block_t* block);
+ast_cond_t* conditional_else(ast_expr_t* expr, ast_block_t* block, ast_block_t* elseblk);
+ast_cond_t* conditional_elif(ast_expr_t* expr, ast_block_t* block, ast_cond_t* elseif);
 
 ast_block_t* block_stmt(ast_stmt_t* first);
 

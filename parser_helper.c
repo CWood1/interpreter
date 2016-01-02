@@ -36,6 +36,14 @@ ast_stmt_t* statement_block(ast_block_t* block) {
   return ret;
 }
 
+ast_stmt_t* statement_conditional(ast_cond_t* cond) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_COND;
+  ret->item.cond = cond;
+
+  return ret;
+}
+
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;
 
@@ -45,6 +53,35 @@ ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
 
   cur->next = new;
   return statements;
+}
+
+ast_cond_t* conditional(ast_expr_t* expr, ast_block_t* block) {
+  ast_cond_t* ret = malloc(sizeof(ast_cond_t));
+  ret->type = AST_COND_BARE;
+  ret->block = block;
+  ret->expr = expr;
+
+  return ret;
+}
+
+ast_cond_t* conditional_else(ast_expr_t* expr, ast_block_t* block, ast_block_t* elseblk) {
+  ast_cond_t* ret = malloc(sizeof(ast_cond_t));
+  ret->type = AST_COND_ELSE;
+  ret->block = block;
+  ret->item.elseblk = elseblk;
+  ret->expr = expr;
+
+  return ret;
+}
+
+ast_cond_t* conditional_elif(ast_expr_t* expr, ast_block_t* block, ast_cond_t* elseif) {
+  ast_cond_t* ret = malloc(sizeof(ast_cond_t));
+  ret->type = AST_COND_ELIF;
+  ret->block = block;
+  ret->item.elseif = elseif;
+  ret->expr = expr;
+
+  return ret;
 }
 
 ast_block_t* block_stmt(ast_stmt_t* first) {
