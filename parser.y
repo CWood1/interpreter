@@ -47,6 +47,8 @@
 program : stmts { prog = $1; }
 
 block : TLBRACE stmts TRBRACE { $$ = block_stmt($2); }
+| TLBRACE stmts expr TRBRACE { $$ = block_stmt_expr($2, $3); }
+| TLBRACE expr TRBRACE { $$ = block_stmt_expr(NULL, $2); }
 
 stmts : stmt { $$ = $1; }
 | stmts stmt { $$ = statement_append($1, $2); }

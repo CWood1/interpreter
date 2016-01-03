@@ -300,11 +300,7 @@ result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope) {
     return interpreter_handlebinop(t->item.binop, scope);
     
   case AST_EXPR_BLOCK:
-    interpreter_handleblock(t->item.block, scope);
-
-    result_t* ret = malloc(sizeof(result_t));
-    ret->type = RES_NONE;
-    return ret;
+    return interpreter_handleblock(t->item.block, scope);
   }
 }
 
@@ -367,6 +363,9 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
 
       return res;
     }
+
+    break;
+    
   case RES_BOOL:
     if(vd->type == VAR_BOOL) {
       vd->item.bVal = res->item.bVal;
@@ -388,6 +387,8 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
       return res;
     }
 
+    break;
+    
   case RES_NONE:
     if(vd->type == VAR_NONE || (vd->type == VAR_UNKNOWN && t->type == AST_ASSIGN_DECL)) {
       vd->type = VAR_NONE;
@@ -404,6 +405,8 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
 
       return res;
     }
+
+    break;
   }
 
   free(res);
@@ -418,7 +421,7 @@ result_t* interpreter_handlecond(ast_cond_t* t, scope_t* scope) {
 
   if(expr->type == RES_BOOL && expr->item.bVal == 1) {
     free(expr);
-    interpreter_handleblock(t->block, scope);
+    return interpreter_handleblock(t->block, scope);
   } else if(expr->type != RES_BOOL) {
     free(expr);
 
@@ -435,11 +438,11 @@ result_t* interpreter_handlecond(ast_cond_t* t, scope_t* scope) {
       break;
 
     case AST_COND_ELSE:
-      interpreter_handleblock(t->item.elseblk, scope);
+      return interpreter_handleblock(t->item.elseblk, scope);
       break;
 
     case AST_COND_ELIF:
-      interpreter_handlecond(t->item.elseif, scope);
+      return interpreter_handlecond(t->item.elseif, scope);
       break;
     }
   }
@@ -460,12 +463,7 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
   case AST_STMT_COND:
     return interpreter_handlecond(t->item.cond, scope);
   case AST_STMT_BLOCK:
-    interpreter_handleblock(t->item.block, scope);
-
-    result_t* res = malloc(sizeof(result_t));
-    res->type = RES_NONE;
-
-    return res;
+    return interpreter_handleblock(t->item.block, scope);
   }
 }
 
@@ -493,9 +491,19 @@ void interpretloop(ast_stmt_t* t, scope_t* scope) {
   }
 }
 
-void interpreter_handleblock(ast_block_t* block, scope_t* scope) {
+result_t* interpreter_handleblock(ast_block_t* block, scope_t* scope) {
   scope_t* newScope = malloc(sizeof(scope_t));
   newScope->parent = scope;
-  
-  interpretloop(block->first, newScope);
+
+  if(block->first != NULL)
+    interpretloop(block->first, newScope);
+
+  if(block->last != NULL) {
+    return interpreter_handleexpr(block->last, scope);
+  } else {
+    result_t* res = malloc(sizeof(result_t));
+    res->type = RES_NONE;
+
+    return res;
+  }
 }

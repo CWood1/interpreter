@@ -89,6 +89,7 @@ typedef struct ast_stmt {
 
 typedef struct ast_block {
   ast_stmt_t* first;
+  ast_expr_t* last;
 } ast_block_t;
 
 typedef struct ast_cond {
@@ -119,6 +120,7 @@ ast_cond_t* conditional_else(ast_expr_t* expr, ast_block_t* block, ast_block_t* 
 ast_cond_t* conditional_elif(ast_expr_t* expr, ast_block_t* block, ast_cond_t* elseif);
 
 ast_block_t* block_stmt(ast_stmt_t* first);
+ast_block_t* block_stmt_expr(ast_stmt_t* first, ast_expr_t* last);
 
 ast_expr_t* expression_int(int val);
 ast_expr_t* expression_bool(int val);

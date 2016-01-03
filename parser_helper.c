@@ -87,6 +87,15 @@ ast_cond_t* conditional_elif(ast_expr_t* expr, ast_block_t* block, ast_cond_t* e
 ast_block_t* block_stmt(ast_stmt_t* first) {
   ast_block_t* ret = malloc(sizeof(ast_block_t));
   ret->first = first;
+  ret->last = NULL;
+
+  return ret;
+}
+
+ast_block_t* block_stmt_expr(ast_stmt_t* first, ast_expr_t* last) {
+  ast_block_t* ret = malloc(sizeof(ast_block_t));
+  ret->first = first;
+  ret->last = last;
 
   return ret;
 }
