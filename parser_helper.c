@@ -36,6 +36,14 @@ ast_stmt_t* statement_conditional(ast_cond_t* cond) {
   return ret;
 }
 
+ast_stmt_t* statement_block(ast_block_t* block) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_BLOCK;
+  ret->item.block = block;
+
+  return ret;
+}
+
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;
 

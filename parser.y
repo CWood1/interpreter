@@ -55,6 +55,7 @@ stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | expr TSTMT { $$ = statement_expr($1); }
 | var_decl_typed TSTMT { $$ = statement_decl($1); }
 | ifblock { $$ = statement_conditional($1); }
+| block { $$ = statement_block($1); }
 
 ifblock : TIF expr block { $$ = conditional($2, $3); }
 | TIF expr block TELSE block { $$ = conditional_else($2, $3, $5); }

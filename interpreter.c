@@ -459,6 +459,13 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
     return interpreter_handledecl(t->item.decl, scope);
   case AST_STMT_COND:
     return interpreter_handlecond(t->item.cond, scope);
+  case AST_STMT_BLOCK:
+    interpreter_handleblock(t->item.block, scope);
+
+    result_t* res = malloc(sizeof(result_t));
+    res->type = RES_NONE;
+
+    return res;
   }
 }
 
