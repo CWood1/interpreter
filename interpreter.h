@@ -7,6 +7,7 @@ struct scope;
 
 typedef enum {
   VAR_UNKNOWN,
+  VAR_NONE,
   VAR_BOOL,
   VAR_INT
 } vardecl_e;

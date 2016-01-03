@@ -54,7 +54,8 @@ typedef struct ast_expr {
     AST_EXPR_INT,
     AST_EXPR_BOOL,
     AST_EXPR_BINOP,
-    AST_EXPR_IDENT
+    AST_EXPR_IDENT,
+    AST_EXPR_BLOCK
   } type;
 
   union {
@@ -62,6 +63,7 @@ typedef struct ast_expr {
     int bVal;
     ast_binop_t* binop;
     ast_ident_t* ident;
+    struct ast_block* block;
   } item;
 } ast_expr_t;
 
@@ -70,7 +72,6 @@ typedef struct ast_stmt {
     AST_STMT_ASSIGN,
     AST_STMT_EXPR,
     AST_STMT_DECL,
-    AST_STMT_BLOCK,
     AST_STMT_COND
   } type;
 
@@ -78,7 +79,6 @@ typedef struct ast_stmt {
     ast_assign_t* assign;
     ast_expr_t* expr;
     ast_decl_t* decl;
-    struct ast_block* block;
     struct ast_cond* cond;
   } item;
 
@@ -108,7 +108,6 @@ typedef struct ast_cond {
 ast_stmt_t* statement_assign(ast_assign_t* assign);
 ast_stmt_t* statement_expr(ast_expr_t* expr);
 ast_stmt_t* statement_decl(ast_decl_t* decl);
-ast_stmt_t* statement_block(ast_block_t* block);
 ast_stmt_t* statement_conditional(ast_cond_t* cond);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
 
@@ -122,6 +121,7 @@ ast_expr_t* expression_int(int val);
 ast_expr_t* expression_bool(int val);
 ast_expr_t* expression_binop(ast_binop_t* binop);
 ast_expr_t* expression_ident(ast_ident_t* ident);
+ast_expr_t* expression_block(ast_block_t* block);
 
 ast_binop_t* addition(ast_expr_t* left, ast_expr_t* right);
 ast_binop_t* subtraction(ast_expr_t* left, ast_expr_t* right);

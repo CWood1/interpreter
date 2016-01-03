@@ -28,14 +28,6 @@ ast_stmt_t* statement_decl(ast_decl_t* decl) {
   return ret;
 }
 
-ast_stmt_t* statement_block(ast_block_t* block) {
-  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
-  ret->type = AST_STMT_BLOCK;
-  ret->item.block = block;
-
-  return ret;
-}
-
 ast_stmt_t* statement_conditional(ast_cond_t* cond) {
   ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
   ret->type = AST_STMT_COND;
@@ -119,6 +111,14 @@ ast_expr_t* expression_ident(ast_ident_t* ident) {
   ast_expr_t* ret = malloc(sizeof(ast_expr_t));
   ret->type = AST_EXPR_IDENT;
   ret->item.ident = ident;
+
+  return ret;
+}
+
+ast_expr_t* expression_block(ast_block_t* block) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_BLOCK;
+  ret->item.block = block;
 
   return ret;
 }

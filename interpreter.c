@@ -140,6 +140,11 @@ result_t* interpreter_handleident(ast_ident_t* t, scope_t* scope) {
     res->item.bVal = vd->item.bVal;
 
     return res;
+
+  case VAR_NONE:
+    res->type = RES_NONE;
+
+    return res;
   }
 }
 
@@ -293,6 +298,13 @@ result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope) {
 
   case AST_EXPR_BINOP:
     return interpreter_handlebinop(t->item.binop, scope);
+    
+  case AST_EXPR_BLOCK:
+    interpreter_handleblock(t->item.block, scope);
+
+    result_t* ret = malloc(sizeof(result_t));
+    ret->type = RES_NONE;
+    return ret;
   }
 }
 
@@ -375,6 +387,23 @@ result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope) {
 
       return res;
     }
+
+  case RES_NONE:
+    if(vd->type == VAR_NONE || (vd->type == VAR_UNKNOWN && t->type == AST_ASSIGN_DECL)) {
+      vd->type = VAR_NONE;
+      vd->initialised = 1;
+    } else {
+      free(res);
+      res = malloc(sizeof(result_t));
+
+      res->type = RES_ERROR;
+
+      char* s = "Error - type mismatch when assigning to ";
+      res->item.error = malloc(strlen(s) + strlen(vd->identifier) + 2);
+      sprintf(res->item.error, "%s%s\n", s, vd->identifier);
+
+      return res;
+    }
   }
 
   free(res);
@@ -428,13 +457,6 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
     return interpreter_handleexpr(t->item.expr, scope);
   case AST_STMT_DECL:
     return interpreter_handledecl(t->item.decl, scope);
-  case AST_STMT_BLOCK:
-    interpreter_handleblock(t->item.block, scope);
-
-    result_t* ret = malloc(sizeof(result_t));
-    ret->type = RES_NONE;
-    return ret;
-
   case AST_STMT_COND:
     return interpreter_handlecond(t->item.cond, scope);
   }

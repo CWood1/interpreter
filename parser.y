@@ -54,7 +54,6 @@ stmts : stmt { $$ = $1; }
 stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | expr TSTMT { $$ = statement_expr($1); }
 | var_decl_typed TSTMT { $$ = statement_decl($1); }
-| block { $$ = statement_block($1); }
 | ifblock { $$ = statement_conditional($1); }
 
 ifblock : TIF expr block { $$ = conditional($2, $3); }
@@ -80,6 +79,7 @@ expr : additive { $$ = $1; }
 | additive TGREATERTHAN expr { $$ = expression_binop(greaterthan($1, $3)); }
 | additive TLESSOREQ expr { $$ = expression_binop(lessoreq($1, $3)); }
 | additive TGREATEROREQ expr { $$ = expression_binop(greateroreq($1, $3)); }
+| block { $$ = expression_block($1); }
 
 additive : factor { $$ = $1; }
 | factor TPLUS expr { $$ = expression_binop(addition($1, $3)); }
