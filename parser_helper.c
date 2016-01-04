@@ -140,6 +140,14 @@ ast_expr_t* expression_block(ast_block_t* block) {
   return ret;
 }
 
+ast_expr_t* expression_if(ast_cond_t* cond) {
+  ast_expr_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_EXPR_IFBLK;
+  ret->item.ifblk = cond;
+
+  return ret;
+}
+
 ast_binop_t* addition(ast_expr_t* left, ast_expr_t* right) {
   ast_binop_t* ret = malloc(sizeof(ast_binop_t));
   ret->type = AST_BINOP_ADD;

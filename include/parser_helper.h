@@ -55,7 +55,8 @@ typedef struct ast_expr {
     AST_EXPR_BOOL,
     AST_EXPR_BINOP,
     AST_EXPR_IDENT,
-    AST_EXPR_BLOCK
+    AST_EXPR_BLOCK,
+    AST_EXPR_IFBLK
   } type;
 
   union {
@@ -64,6 +65,7 @@ typedef struct ast_expr {
     ast_binop_t* binop;
     ast_ident_t* ident;
     struct ast_block* block;
+    struct ast_cond* ifblk;
   } item;
 } ast_expr_t;
 
@@ -127,6 +129,7 @@ ast_expr_t* expression_bool(int val);
 ast_expr_t* expression_binop(ast_binop_t* binop);
 ast_expr_t* expression_ident(ast_ident_t* ident);
 ast_expr_t* expression_block(ast_block_t* block);
+ast_expr_t* expression_if(ast_cond_t* cond);
 
 ast_binop_t* addition(ast_expr_t* left, ast_expr_t* right);
 ast_binop_t* subtraction(ast_expr_t* left, ast_expr_t* right);

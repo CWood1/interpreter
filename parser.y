@@ -83,6 +83,7 @@ expr : additive { $$ = $1; }
 | additive TLESSOREQ expr { $$ = expression_binop(lessoreq($1, $3)); }
 | additive TGREATEROREQ expr { $$ = expression_binop(greateroreq($1, $3)); }
 | block { $$ = expression_block($1); }
+| ifblock { $$ = expression_if($1); }
 
 additive : factor { $$ = $1; }
 | factor TPLUS expr { $$ = expression_binop(addition($1, $3)); }

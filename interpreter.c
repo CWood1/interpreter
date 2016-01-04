@@ -301,6 +301,9 @@ result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope) {
     
   case AST_EXPR_BLOCK:
     return interpreter_handleblock(t->item.block, scope);
+
+  case AST_EXPR_IFBLK:
+    return interpreter_handlecond(t->item.ifblk, scope);
   }
 }
 
