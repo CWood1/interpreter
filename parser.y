@@ -21,6 +21,7 @@
   ast_assign_t* assign;
   ast_block_t* block;
   ast_cond_t* cond;
+  ast_while_t* whil;
   char* string;
   int token;
 }
@@ -30,7 +31,7 @@
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
 %token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE TEQUALTO TNOTEQUAL TLESSTHAN TGREATERTHAN
-%token <token> TLESSOREQ TGREATEROREQ TIF TELSE
+%token <token> TLESSOREQ TGREATEROREQ TIF TELSE TWHILE
 %token <string> TIDENTIFIER TTYPE
 %token <string> TINTEGER
 
@@ -41,6 +42,7 @@
 %type <ident> ident
 %type <block> block
 %type <cond> ifblock
+%type <whil> whileblock
 
 %%
 
@@ -58,6 +60,9 @@ stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | var_decl_typed TSTMT { $$ = statement_decl($1); }
 | ifblock { $$ = statement_conditional($1); }
 | block { $$ = statement_block($1); }
+| whileblock { $$ = statement_whileloop($1); }
+
+whileblock : TWHILE expr block { $$ = whileloop($2, $3); }
 
 ifblock : TIF expr block { $$ = conditional($2, $3); }
 | TIF expr block TELSE block { $$ = conditional_else($2, $3, $5); }

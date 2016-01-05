@@ -44,6 +44,8 @@ vardecl_t* newvar(char* name, scope_t* scope) {
   vd->initialised = 0;
   vd->containingScope = scope;
 
+  vd->next = NULL;
+
   return vd;
 }
 
@@ -467,6 +469,8 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
     return interpreter_handlecond(t->item.cond, scope);
   case AST_STMT_BLOCK:
     return interpreter_handleblock(t->item.block, scope);
+  case AST_STMT_WHILE:
+    return interpreter_handlewhile(t->item.whileblock, scope);
   }
 }
 
@@ -494,9 +498,55 @@ void interpretloop(ast_stmt_t* t, scope_t* scope) {
   }
 }
 
+result_t* interpreter_handlewhile(ast_while_t* loop, scope_t* scope) {
+  result_t* inloop = interpreter_handleexpr(loop->cond, scope);
+  if(inloop->type == RES_ERROR) {
+    return inloop;
+  } else if(inloop->type != RES_BOOL) {
+    free(inloop);
+
+    result_t* res = malloc(sizeof(result_t));
+    res->type = RES_ERROR;
+    res->item.error = strdup("Error - Attempted to execute while loop with non-boolean condition\n");
+
+    return res;
+  }
+
+  while(inloop->item.bVal == 1) {
+    result_t* tmp = interpreter_handleblock(loop->block, scope);
+
+    if(tmp->type == RES_ERROR) {
+      free(inloop);
+      return tmp;
+    }
+
+    free(inloop);
+    
+    inloop = interpreter_handleexpr(loop->cond, scope);
+    if(inloop->type == RES_ERROR) {
+      return inloop;
+    } else if(inloop->type != RES_BOOL) {
+      free(inloop);
+
+      result_t* res = malloc(sizeof(result_t));
+      res->type = RES_ERROR;
+      res->item.error = strdup("Error - Attempted to execute while loop with non-boolean condition\n");
+
+      return res;
+    }
+  }
+
+  free(inloop);
+
+  inloop = malloc(sizeof(result_t));
+  inloop->type = RES_NONE;
+  return inloop;
+}
+
 result_t* interpreter_handleblock(ast_block_t* block, scope_t* scope) {
   scope_t* newScope = malloc(sizeof(scope_t));
   newScope->parent = scope;
+  newScope->vars = NULL;
 
   if(block->first != NULL)
     interpretloop(block->first, newScope);

@@ -4,6 +4,7 @@
 struct ast_expr;
 struct ast_block;
 struct ast_cond;
+struct ast_while;
 
 typedef struct {
   char* ident;
@@ -75,7 +76,8 @@ typedef struct ast_stmt {
     AST_STMT_EXPR,
     AST_STMT_DECL,
     AST_STMT_BLOCK,
-    AST_STMT_COND
+    AST_STMT_COND,
+    AST_STMT_WHILE
   } type;
 
   union {
@@ -84,6 +86,7 @@ typedef struct ast_stmt {
     ast_decl_t* decl;
     struct ast_block* block;
     struct ast_cond* cond;
+    struct ast_while* whileblock;
   } item;
 
   struct ast_stmt* next;
@@ -110,12 +113,20 @@ typedef struct ast_cond {
   } item;
 } ast_cond_t;
 
+typedef struct ast_while {
+  ast_block_t* block;
+  ast_expr_t* cond;
+} ast_while_t;
+  
 ast_stmt_t* statement_assign(ast_assign_t* assign);
 ast_stmt_t* statement_expr(ast_expr_t* expr);
 ast_stmt_t* statement_decl(ast_decl_t* decl);
 ast_stmt_t* statement_conditional(ast_cond_t* cond);
 ast_stmt_t* statement_block(ast_block_t* block);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
+ast_stmt_t* statement_whileloop(ast_while_t* loop);
+
+ast_while_t* whileloop(ast_expr_t* cond, ast_block_t* block);
 
 ast_cond_t* conditional(ast_expr_t* expr, ast_block_t* block);
 ast_cond_t* conditional_else(ast_expr_t* expr, ast_block_t* block, ast_block_t* elseblk);

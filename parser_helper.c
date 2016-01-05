@@ -44,6 +44,14 @@ ast_stmt_t* statement_block(ast_block_t* block) {
   return ret;
 }
 
+ast_stmt_t* statement_whileloop(ast_while_t* loop) {
+  ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
+  ret->type = AST_STMT_WHILE;
+  ret->item.whileblock = loop;
+
+  return ret;
+}
+    
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;
 
@@ -53,6 +61,14 @@ ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
 
   cur->next = new;
   return statements;
+}
+
+ast_while_t* whileloop(ast_expr_t* cond, ast_block_t* block) {
+  ast_while_t* ret = malloc(sizeof(ast_while_t));
+  ret->block = block;
+  ret->cond = cond;
+
+  return ret;
 }
 
 ast_cond_t* conditional(ast_expr_t* expr, ast_block_t* block) {

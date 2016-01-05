@@ -63,6 +63,7 @@ result_t* interpreter_handleexpr(ast_expr_t* t, scope_t* scope);
 result_t* interpreter_handleassign(ast_assign_t* t, scope_t* scope);
 result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope);
 result_t* interpreter_handlecond(ast_cond_t* t, scope_t* scope);
+result_t* interpreter_handlewhile(ast_while_t* loop, scope_t* scope);
 
 result_t* interpreter_handleblock(ast_block_t* block, scope_t* scope);
 
