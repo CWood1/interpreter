@@ -9,6 +9,8 @@ ast_stmt_t* statement_assign(ast_assign_t* assign) {
   ret->type = AST_STMT_ASSIGN;
   ret->item.assign = assign;
 
+  ret->next = NULL;
+
   return ret;
 }
 
@@ -16,6 +18,8 @@ ast_stmt_t* statement_expr(ast_expr_t* expr) {
   ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
   ret->type = AST_STMT_EXPR;
   ret->item.expr = expr;
+
+  ret->next = NULL;
 
   return ret;
 }
@@ -25,6 +29,8 @@ ast_stmt_t* statement_decl(ast_decl_t* decl) {
   ret->type = AST_STMT_DECL;
   ret->item.decl = decl;
 
+  ret->next = NULL;
+
   return ret;
 }
 
@@ -32,6 +38,8 @@ ast_stmt_t* statement_conditional(ast_cond_t* cond) {
   ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
   ret->type = AST_STMT_COND;
   ret->item.cond = cond;
+
+  ret->next = NULL;
 
   return ret;
 }
@@ -41,6 +49,8 @@ ast_stmt_t* statement_block(ast_block_t* block) {
   ret->type = AST_STMT_BLOCK;
   ret->item.block = block;
 
+  ret->next = NULL;
+
   return ret;
 }
 
@@ -48,6 +58,8 @@ ast_stmt_t* statement_whileloop(ast_while_t* loop) {
   ast_stmt_t* ret = malloc(sizeof(ast_stmt_t));
   ret->type = AST_STMT_WHILE;
   ret->item.whileblock = loop;
+
+  ret->next = NULL;
 
   return ret;
 }

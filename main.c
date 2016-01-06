@@ -21,6 +21,9 @@ int main(int argc, char** argv) {
   yyparse();
   
   scope_t* global = malloc(sizeof(scope_t));
+  global->parent = NULL;
+  global->vars = NULL;
+  
   interpretloop(prog, global);
   
   return 0;
