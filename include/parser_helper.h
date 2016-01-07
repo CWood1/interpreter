@@ -77,7 +77,8 @@ typedef struct ast_stmt {
     AST_STMT_DECL,
     AST_STMT_BLOCK,
     AST_STMT_COND,
-    AST_STMT_WHILE
+    AST_STMT_WHILE,
+    AST_STMT_CONT
   } type;
 
   union {
@@ -125,6 +126,7 @@ ast_stmt_t* statement_conditional(ast_cond_t* cond);
 ast_stmt_t* statement_block(ast_block_t* block);
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new);
 ast_stmt_t* statement_whileloop(ast_while_t* loop);
+ast_stmt_t* statement_cont();
 
 ast_while_t* whileloop(ast_expr_t* cond, ast_block_t* block);
 

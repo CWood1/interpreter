@@ -63,6 +63,13 @@ ast_stmt_t* statement_whileloop(ast_while_t* loop) {
 
   return ret;
 }
+
+ast_stmt_t* statement_cont() {
+  ast_stmt_t* ret = malloc(sizeof(ast_expr_t));
+  ret->type = AST_STMT_CONT;
+
+  return ret;
+}
     
 ast_stmt_t* statement_append(ast_stmt_t* statements, ast_stmt_t* new) {
   ast_stmt_t* cur = statements;

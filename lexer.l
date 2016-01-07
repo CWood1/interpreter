@@ -19,6 +19,7 @@ int linenum;
 "if"                       return TIF;
 "else"                     return TELSE;
 "while"                    return TWHILE;
+"continue"                 return TCONTINUE;
 "i32"|"bool"               SAVE_TOKEN; return TTYPE;
 "true"                     return TTRUE;
 "false"                    return TFALSE;

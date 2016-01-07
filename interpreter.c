@@ -471,10 +471,17 @@ result_t* interpreter_handlestmt(ast_stmt_t* t, scope_t* scope) {
     return interpreter_handleblock(t->item.block, scope);
   case AST_STMT_WHILE:
     return interpreter_handlewhile(t->item.whileblock, scope);
+  case AST_STMT_CONT:
+    {
+      result_t* res = malloc(sizeof(result_t));
+      res->type = RES_CONT;
+      
+      return res;
+    }
   }
 }
 
-void interpretloop(ast_stmt_t* t, scope_t* scope) {
+result_t* interpretloop(ast_stmt_t* t, scope_t* scope) {
   while(t != NULL) {
     result_t* res = interpreter_handlestmt(t, scope);
 
@@ -488,6 +495,8 @@ void interpretloop(ast_stmt_t* t, scope_t* scope) {
     case RES_ERROR:
       printf("%s\n", res->item.error);
       break;
+    case RES_CONT:
+      return res;
     default:
       break;
     }
@@ -496,6 +505,11 @@ void interpretloop(ast_stmt_t* t, scope_t* scope) {
     
     t = t->next;
   }
+
+  result_t* ret = malloc(sizeof(result_t));
+  ret->type = RES_NONE;
+
+  return ret;
 }
 
 result_t* interpreter_handlewhile(ast_while_t* loop, scope_t* scope) {
@@ -548,8 +562,12 @@ result_t* interpreter_handleblock(ast_block_t* block, scope_t* scope) {
   newScope->parent = scope;
   newScope->vars = NULL;
 
-  if(block->first != NULL)
-    interpretloop(block->first, newScope);
+  if(block->first != NULL) {
+    result_t* res = interpretloop(block->first, newScope);
+
+    if(res->type = RES_CONT)
+      return res;
+  }
 
   if(block->last != NULL) {
     return interpreter_handleexpr(block->last, scope);

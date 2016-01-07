@@ -33,7 +33,8 @@ typedef enum {
   RES_BOOL,
   RES_ERROR,
   RES_DECL,
-  RES_NONE
+  RES_NONE,
+  RES_CONT
 } result_e;
 
 typedef struct result {
@@ -67,6 +68,6 @@ result_t* interpreter_handlewhile(ast_while_t* loop, scope_t* scope);
 
 result_t* interpreter_handleblock(ast_block_t* block, scope_t* scope);
 
-void interpretloop(ast_stmt_t* t, scope_t* scope);
+result_t* interpretloop(ast_stmt_t* t, scope_t* scope);
 
 #endif

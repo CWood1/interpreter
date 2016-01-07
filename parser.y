@@ -31,7 +31,7 @@
 
 %token <token> TLET TMUT TEQUAL TSTMT TPLUS TMINUS TMULTIPLY TDIVIDE TMOD TLPAREN TRPAREN
 %token <token> TCOLON TLBRACE TRBRACE TTRUE TFALSE TEQUALTO TNOTEQUAL TLESSTHAN TGREATERTHAN
-%token <token> TLESSOREQ TGREATEROREQ TIF TELSE TWHILE
+%token <token> TLESSOREQ TGREATEROREQ TIF TELSE TWHILE TCONTINUE
 %token <string> TIDENTIFIER TTYPE
 %token <string> TINTEGER
 
@@ -61,6 +61,7 @@ stmt : var_assign TSTMT { $$ = statement_assign($1); }
 | ifblock { $$ = statement_conditional($1); }
 | block { $$ = statement_block($1); }
 | whileblock { $$ = statement_whileloop($1); }
+| TCONTINUE TSTMT { $$ = statement_cont(); }
 
 whileblock : TWHILE expr block { $$ = whileloop($2, $3); }
 
