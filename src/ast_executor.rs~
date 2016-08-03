@@ -1,0 +1,13 @@
+pub trait AstExecutor {
+    fn execute(&self) -> i32;
+}
+
+impl AstExecutor for Vec<Box<AstExecutor>> {
+    fn execute(&self) -> i32 {
+        for stmt in self {
+            println!("{}", stmt.execute());
+        }
+
+        0
+    }
+}

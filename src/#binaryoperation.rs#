@@ -1,0 +1,41 @@
+use ast_executor::AstExecutor;
+use numeric::Numeric;
+
+pub struct BinOpAdd {
+    left: Box<AstExecutor>,
+    right: Box<AstExecutor>,
+}
+
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+}
+
+impl BinaryOpAdd {
+    pub fn new(left: Box<AstExecutor>, right: Box<AstExecutor>) -> BinaryOperation {
+        BinOpAdd {
+            left: left,
+            right: right,
+        }
+    }
+}
+
+impl AstExecutor for BinaryOpAdd {
+    fn execute(&self) -> Numeric {
+        let left = self.left.execute();
+        let right = self.right.execute();
+
+        
+        
+        match self.operation {
+            BinaryOp::Add => self.left.execute() + self.right.execute(),
+            BinaryOp::Sub => self.left.execute() - self.right.execute(),
+            BinaryOp::Mul => self.left.execute() * self.right.execute(),
+            BinaryOp::Div => self.left.execute() / self.right.execute(),
+            BinaryOp::Mod => self.left.execute() % self.right.execute(),
+        }
+    }
+}
