@@ -1,0 +1,11 @@
+[package]
+name = "rusty"
+version = "0.1.0"
+authors = ["Connor Wood <connorwood71@gmail.com>"]
+build = "build.rs"
+
+[build-dependencies]
+lalrpop = "0.11.0"
+
+[dependencies]
+lalrpop-util = "0.11.0"

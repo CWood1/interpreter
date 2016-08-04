@@ -1,9 +1,9 @@
 use ast_executor::AstExecutor;
-use numeric::Numeric;
 
-pub struct BinOpAdd {
+pub struct BinaryOperation {
     left: Box<AstExecutor>,
     right: Box<AstExecutor>,
+    operation: BinaryOp
 }
 
 pub enum BinaryOp {
@@ -14,22 +14,18 @@ pub enum BinaryOp {
     Mod,
 }
 
-impl BinaryOpAdd {
-    pub fn new(left: Box<AstExecutor>, right: Box<AstExecutor>) -> BinaryOperation {
-        BinOpAdd {
+impl BinaryOperation {
+    pub fn new(left: Box<AstExecutor>, operation: BinaryOp, right: Box<AstExecutor>) -> BinaryOperation {
+        BinaryOperation {
             left: left,
             right: right,
+            operation: operation,
         }
     }
 }
 
-impl AstExecutor for BinaryOpAdd {
-    fn execute(&self) -> Numeric {
-        let left = self.left.execute();
-        let right = self.right.execute();
-
-        
-        
+impl AstExecutor for BinaryOperation {
+    fn execute(&self) -> i32 {
         match self.operation {
             BinaryOp::Add => self.left.execute() + self.right.execute(),
             BinaryOp::Sub => self.left.execute() - self.right.execute(),

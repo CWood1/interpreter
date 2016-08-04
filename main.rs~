@@ -1,0 +1,7 @@
+pub mod parser;
+
+fn main() {
+    let x: i32 = parse_Term("22").unwrap();
+
+    println!("{}", i32);
+}

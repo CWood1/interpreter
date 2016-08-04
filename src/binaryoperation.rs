@@ -1,37 +1,28 @@
 use ast_executor::AstExecutor;
+use value::Value;
 
-pub struct BinaryOperation {
+pub struct BinOpAdd {
     left: Box<AstExecutor>,
     right: Box<AstExecutor>,
-    operation: BinaryOp
 }
 
-pub enum BinaryOp {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-}
-
-impl BinaryOperation {
-    pub fn new(left: Box<AstExecutor>, operation: BinaryOp, right: Box<AstExecutor>) -> BinaryOperation {
-        BinaryOperation {
+impl BinOpAdd {
+    pub fn new(left: Box<AstExecutor>, right: Box<AstExecutor>) -> BinOpAdd {
+        BinOpAdd {
             left: left,
             right: right,
-            operation: operation,
         }
     }
 }
 
-impl AstExecutor for BinaryOperation {
-    fn execute(&self) -> i32 {
-        match self.operation {
-            BinaryOp::Add => self.left.execute() + self.right.execute(),
-            BinaryOp::Sub => self.left.execute() - self.right.execute(),
-            BinaryOp::Mul => self.left.execute() * self.right.execute(),
-            BinaryOp::Div => self.left.execute() / self.right.execute(),
-            BinaryOp::Mod => self.left.execute() % self.right.execute(),
+impl AstExecutor for BinOpAdd {
+    fn execute(&self) -> Value {
+        let vals = (self.left.execute(), self.right.execute());
+
+        match vals {
+            (Value::Nu8(l), Value::Nu8(r)) => Value::Nu8(l + r),
+            (Value::Ni8(l), Value::Ni8(r)) => Value::Ni8(l + r),
+            _ => panic!("Type mismatch: attempted to add a u8 to an i8"),
         }
     }
 }

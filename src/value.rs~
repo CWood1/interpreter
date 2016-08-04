@@ -1,0 +1,25 @@
+use ast_executor::AstExecutor;
+use std::fmt;
+
+#[derive(Clone)]
+pub enum Value {
+    Nu8(u8),
+    Ni8(i8),
+    None,
+}
+
+impl AstExecutor for Value {
+    fn execute(&self) -> Value {
+        self.clone()
+    }
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &Value::Nu8(n) => write!(f, "{}", n),
+            &Value::Ni8(n) => write!(f, "{}", n),
+            &Value::None => write!(f, ""),
+        }
+    }
+}

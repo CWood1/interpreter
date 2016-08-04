@@ -10,6 +10,6 @@ impl AstExecutor for Vec<Box<AstExecutor>> {
             println!("{}", stmt.execute());
         }
 
-        Value::Type_u8(0)
+        Value::None
     }
 }

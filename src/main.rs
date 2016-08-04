@@ -1,5 +1,5 @@
 pub mod parser;
-pub mod numeric;
+pub mod value;
 pub mod binaryoperation;
 pub mod ast_executor;
 

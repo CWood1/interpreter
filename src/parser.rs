@@ -1,8 +1,9 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 use std::str::FromStr;
-use binaryoperation::{BinaryOperation, BinaryOp};
+use binaryoperation::BinOpAdd;
 use ast_executor::AstExecutor;
+use value::Value;
 extern crate lalrpop_util as __lalrpop_util;
 use self::__lalrpop_util::ParseError as __ParseError;
 
@@ -10,8 +11,9 @@ mod __parse__Stmts {
     #![allow(non_snake_case, non_camel_case_types, unused_mut, unused_variables, unused_imports)]
 
     use std::str::FromStr;
-    use binaryoperation::{BinaryOperation, BinaryOp};
+    use binaryoperation::BinOpAdd;
     use ast_executor::AstExecutor;
+    use value::Value;
     extern crate lalrpop_util as __lalrpop_util;
     use self::__lalrpop_util::ParseError as __ParseError;
     pub fn parse_Stmts<
@@ -26,11 +28,11 @@ mod __parse__Stmts {
             None => None,
             Some(Err(e)) => return Err(e),
         };
-        match try!(__state0(input, None, &mut __tokens, __lookahead)) {
-            (_, Some(__lookahead), _) => {
+        match try!(__state0(input, &mut __tokens, __lookahead)) {
+            (Some(__lookahead), _) => {
                 Err(__ParseError::ExtraToken { token: __lookahead })
             }
-            (_, None, __Nonterminal::____Stmts(__nt)) => {
+            (None, __Nonterminal::____Stmts((_, __nt, _))) => {
                 Ok(__nt)
             }
             _ => unreachable!(),
@@ -39,95 +41,37 @@ mod __parse__Stmts {
 
     #[allow(dead_code)]
     pub enum __Nonterminal<> {
-        Expr(Box<AstExecutor>),
-        ExprOp(BinaryOp),
-        Factor(Box<AstExecutor>),
-        FactorOp(BinaryOp),
-        Num(i32),
-        Stmt(Box<AstExecutor>),
-        Stmts(Vec<Box<AstExecutor>>),
-        Term(Box<AstExecutor>),
-        ____Stmts(Vec<Box<AstExecutor>>),
+        Expr((usize, Box<AstExecutor>, usize)),
+        Factor((usize, Box<AstExecutor>, usize)),
+        Num((usize, Value, usize)),
+        Stmt((usize, Box<AstExecutor>, usize)),
+        Stmts((usize, Vec<Box<AstExecutor>>, usize)),
+        Term((usize, Box<AstExecutor>, usize)),
+        ____Stmts((usize, Vec<Box<AstExecutor>>, usize)),
     }
 
-    // State 0
-    //   Expr = (*) Expr ExprOp Factor ["+"]
-    //   Expr = (*) Expr ExprOp Factor ["-"]
-    //   Expr = (*) Expr ExprOp Factor [";"]
-    //   Expr = (*) Factor ["+"]
-    //   Expr = (*) Factor ["-"]
-    //   Expr = (*) Factor [";"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Factor FactorOp Term [";"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Factor = (*) Term [";"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Num = (*) r#"-?[0-9]+"# [";"]
-    //   Stmt = (*) Expr ";" [EOF]
-    //   Stmt = (*) Expr ";" ["("]
-    //   Stmt = (*) Expr ";" [r#"-?[0-9]+"#]
-    //   Stmts = (*) Stmt [EOF]
-    //   Stmts = (*) Stmt ["("]
-    //   Stmts = (*) Stmt [r#"-?[0-9]+"#]
-    //   Stmts = (*) Stmts Stmt [EOF]
-    //   Stmts = (*) Stmts Stmt ["("]
-    //   Stmts = (*) Stmts Stmt [r#"-?[0-9]+"#]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) Num [";"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = (*) "(" Expr ")" [";"]
-    //   __Stmts = (*) Stmts [EOF]
-    //
-    //   "(" -> Shift(S7)
-    //   r#"-?[0-9]+"# -> Shift(S8)
-    //
-    //   Expr -> S1
-    //   Factor -> S2
-    //   Num -> S3
-    //   Stmt -> S4
-    //   Stmts -> S5
-    //   Term -> S6
     pub fn __state0<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym0 = &mut Some((__tok0));
-                __result = try!(__state7(input, __lookbehind, __tokens, __sym0));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym0 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym0));
             }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym0 = &mut Some((__tok0));
-                __result = try!(__state8(input, __lookbehind, __tokens, __sym0));
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym0 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym0));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym0 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym0));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -137,83 +81,62 @@ mod __parse__Stmts {
             }
         }
         loop {
-            let (__lookbehind, __lookahead, __nt) = __result;
+            let (__lookahead, __nt) = __result;
             match __nt {
                 __Nonterminal::Expr(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state1(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state1(input, __tokens, __lookahead, __sym0));
                 }
                 __Nonterminal::Factor(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state2(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state2(input, __tokens, __lookahead, __sym0));
                 }
                 __Nonterminal::Num(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state3(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym0));
                 }
                 __Nonterminal::Stmt(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state4(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state4(input, __tokens, __lookahead, __sym0));
                 }
                 __Nonterminal::Stmts(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state5(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state5(input, __tokens, __lookahead, __sym0));
                 }
                 __Nonterminal::Term(__nt) => {
                     let __sym0 = &mut Some(__nt);
-                    __result = try!(__state6(input, __lookbehind, __tokens, __lookahead, __sym0));
+                    __result = try!(__state6(input, __tokens, __lookahead, __sym0));
                 }
                 _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
+                    return Ok((__lookahead, __nt));
                 }
             }
         }
     }
 
-    // State 1
-    //   Expr = Expr (*) ExprOp Factor ["+"]
-    //   Expr = Expr (*) ExprOp Factor ["-"]
-    //   Expr = Expr (*) ExprOp Factor [";"]
-    //   ExprOp = (*) "+" ["("]
-    //   ExprOp = (*) "+" [r#"-?[0-9]+"#]
-    //   ExprOp = (*) "-" ["("]
-    //   ExprOp = (*) "-" [r#"-?[0-9]+"#]
-    //   Stmt = Expr (*) ";" [EOF]
-    //   Stmt = Expr (*) ";" ["("]
-    //   Stmt = Expr (*) ";" [r#"-?[0-9]+"#]
-    //
-    //   "+" -> Shift(S10)
-    //   "-" -> Shift(S11)
-    //   ";" -> Shift(S12)
-    //
-    //   ExprOp -> S9
     pub fn __state1<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (4, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state10(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (4, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state10(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (5, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state11(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (5, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state11(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (7, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state12(input, __lookbehind, __tokens, __sym0, __sym1));
+            Some((__loc1, (7, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state12(input, __tokens, __sym0, __sym1));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -222,80 +145,46 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::ExprOp(__nt) => {
-                    let __sym1 = &mut Some(__nt);
-                    __result = try!(__state9(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
         return Ok(__result);
     }
 
-    // State 2
-    //   Expr = Factor (*) ["+"]
-    //   Expr = Factor (*) ["-"]
-    //   Expr = Factor (*) [";"]
-    //   Factor = Factor (*) FactorOp Term ["%"]
-    //   Factor = Factor (*) FactorOp Term ["*"]
-    //   Factor = Factor (*) FactorOp Term ["+"]
-    //   Factor = Factor (*) FactorOp Term ["-"]
-    //   Factor = Factor (*) FactorOp Term ["/"]
-    //   Factor = Factor (*) FactorOp Term [";"]
-    //   FactorOp = (*) "%" ["("]
-    //   FactorOp = (*) "%" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "*" ["("]
-    //   FactorOp = (*) "*" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "/" ["("]
-    //   FactorOp = (*) "/" [r#"-?[0-9]+"#]
-    //
-    //   "%" -> Shift(S14)
-    //   "*" -> Shift(S15)
-    //   "+" -> Reduce(Expr = Factor => ActionFn(5);)
-    //   "-" -> Reduce(Expr = Factor => ActionFn(5);)
-    //   "/" -> Shift(S16)
-    //   ";" -> Reduce(Expr = Factor => ActionFn(5);)
-    //
-    //   FactorOp -> S13
     pub fn __state2<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (0, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state14(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state13(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (3, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state15(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state14(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (6, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state16(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state15(input, __tokens, __sym0, __sym1));
             }
             Some((_, (4, _), _)) |
             Some((_, (5, _), _)) |
             Some((_, (7, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action5(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Expr(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action6(input, __sym0);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -304,48 +193,20 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::FactorOp(__nt) => {
-                    let __sym1 = &mut Some(__nt);
-                    __result = try!(__state13(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
         return Ok(__result);
     }
 
-    // State 3
-    //   Term = Num (*) ["%"]
-    //   Term = Num (*) ["*"]
-    //   Term = Num (*) ["+"]
-    //   Term = Num (*) ["-"]
-    //   Term = Num (*) ["/"]
-    //   Term = Num (*) [";"]
-    //
-    //   "%" -> Reduce(Term = Num => ActionFn(13);)
-    //   "*" -> Reduce(Term = Num => ActionFn(13);)
-    //   "+" -> Reduce(Term = Num => ActionFn(13);)
-    //   "-" -> Reduce(Term = Num => ActionFn(13);)
-    //   "/" -> Reduce(Term = Num => ActionFn(13);)
-    //   ";" -> Reduce(Term = Num => ActionFn(13);)
-    //
     pub fn __state3<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<i32>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Value, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             Some((_, (0, _), _)) |
             Some((_, (3, _), _)) |
@@ -354,8 +215,15 @@ mod __parse__Stmts {
             Some((_, (6, _), _)) |
             Some((_, (7, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action13(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Term(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action11(input, __sym0);
+                let __nt = __Nonterminal::Term((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -366,34 +234,32 @@ mod __parse__Stmts {
         }
     }
 
-    // State 4
-    //   Stmts = Stmt (*) [EOF]
-    //   Stmts = Stmt (*) ["("]
-    //   Stmts = Stmt (*) [r#"-?[0-9]+"#]
-    //
-    //   EOF -> Reduce(Stmts = Stmt => ActionFn(1);)
-    //   "(" -> Reduce(Stmts = Stmt => ActionFn(1);)
-    //   r#"-?[0-9]+"# -> Reduce(Stmts = Stmt => ActionFn(1);)
-    //
     pub fn __state4<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             None |
             Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
+            Some((_, (8, _), _)) |
+            Some((_, (9, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action1(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Stmts(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action1(input, __sym0);
+                let __nt = __Nonterminal::Stmts((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -404,87 +270,41 @@ mod __parse__Stmts {
         }
     }
 
-    // State 5
-    //   Expr = (*) Expr ExprOp Factor ["+"]
-    //   Expr = (*) Expr ExprOp Factor ["-"]
-    //   Expr = (*) Expr ExprOp Factor [";"]
-    //   Expr = (*) Factor ["+"]
-    //   Expr = (*) Factor ["-"]
-    //   Expr = (*) Factor [";"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Factor FactorOp Term [";"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Factor = (*) Term [";"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Num = (*) r#"-?[0-9]+"# [";"]
-    //   Stmt = (*) Expr ";" [EOF]
-    //   Stmt = (*) Expr ";" ["("]
-    //   Stmt = (*) Expr ";" [r#"-?[0-9]+"#]
-    //   Stmts = Stmts (*) Stmt [EOF]
-    //   Stmts = Stmts (*) Stmt ["("]
-    //   Stmts = Stmts (*) Stmt [r#"-?[0-9]+"#]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) Num [";"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = (*) "(" Expr ")" [";"]
-    //   __Stmts = Stmts (*) [EOF]
-    //
-    //   EOF -> Reduce(__Stmts = Stmts => ActionFn(0);)
-    //   "(" -> Shift(S7)
-    //   r#"-?[0-9]+"# -> Shift(S8)
-    //
-    //   Expr -> S1
-    //   Factor -> S2
-    //   Num -> S3
-    //   Stmt -> S17
-    //   Term -> S6
     pub fn __state5<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Vec<Box<AstExecutor>>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Vec<Box<AstExecutor>>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state7(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym1));
             }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state8(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym1));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym1));
             }
             None => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action0(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::____Stmts(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action0(input, __sym0);
+                let __nt = __Nonterminal::____Stmts((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -494,63 +314,47 @@ mod __parse__Stmts {
             }
         }
         while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
+            let (__lookahead, __nt) = __result;
             match __nt {
                 __Nonterminal::Expr(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state1(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state1(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Factor(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state2(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state2(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Num(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state3(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Stmt(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state17(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
+                    __result = try!(__state16(input, __tokens, __lookahead, __sym0, __sym1));
                 }
                 __Nonterminal::Term(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state6(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state6(input, __tokens, __lookahead, __sym1));
                 }
                 _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
+                    return Ok((__lookahead, __nt));
                 }
             }
         }
         return Ok(__result);
     }
 
-    // State 6
-    //   Factor = Term (*) ["%"]
-    //   Factor = Term (*) ["*"]
-    //   Factor = Term (*) ["+"]
-    //   Factor = Term (*) ["-"]
-    //   Factor = Term (*) ["/"]
-    //   Factor = Term (*) [";"]
-    //
-    //   "%" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "*" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "+" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "-" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "/" -> Reduce(Factor = Term => ActionFn(9);)
-    //   ";" -> Reduce(Factor = Term => ActionFn(9);)
-    //
     pub fn __state6<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             Some((_, (0, _), _)) |
             Some((_, (3, _), _)) |
@@ -559,8 +363,15 @@ mod __parse__Stmts {
             Some((_, (6, _), _)) |
             Some((_, (7, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action9(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Factor(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action10(input, __sym0);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -571,83 +382,33 @@ mod __parse__Stmts {
         }
     }
 
-    // State 7
-    //   Expr = (*) Expr ExprOp Factor [")"]
-    //   Expr = (*) Expr ExprOp Factor ["+"]
-    //   Expr = (*) Expr ExprOp Factor ["-"]
-    //   Expr = (*) Factor [")"]
-    //   Expr = (*) Factor ["+"]
-    //   Expr = (*) Factor ["-"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term [")"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term [")"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# [")"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num [")"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" [")"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = "(" (*) Expr ")" ["%"]
-    //   Term = "(" (*) Expr ")" ["*"]
-    //   Term = "(" (*) Expr ")" ["+"]
-    //   Term = "(" (*) Expr ")" ["-"]
-    //   Term = "(" (*) Expr ")" ["/"]
-    //   Term = "(" (*) Expr ")" [";"]
-    //
-    //   "(" -> Shift(S22)
-    //   r#"-?[0-9]+"# -> Shift(S23)
-    //
-    //   Expr -> S18
-    //   Factor -> S19
-    //   Num -> S20
-    //   Term -> S21
     pub fn __state7<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state22(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym1));
             }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state23(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym1));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym1));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -657,58 +418,42 @@ mod __parse__Stmts {
             }
         }
         while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
+            let (__lookahead, __nt) = __result;
             match __nt {
                 __Nonterminal::Expr(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state18(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
+                    __result = try!(__state17(input, __tokens, __lookahead, __sym0, __sym1));
                 }
                 __Nonterminal::Factor(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state19(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state18(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Num(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state20(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Term(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state21(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state20(input, __tokens, __lookahead, __sym1));
                 }
                 _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
+                    return Ok((__lookahead, __nt));
                 }
             }
         }
         return Ok(__result);
     }
 
-    // State 8
-    //   Num = r#"-?[0-9]+"# (*) ["%"]
-    //   Num = r#"-?[0-9]+"# (*) ["*"]
-    //   Num = r#"-?[0-9]+"# (*) ["+"]
-    //   Num = r#"-?[0-9]+"# (*) ["-"]
-    //   Num = r#"-?[0-9]+"# (*) ["/"]
-    //   Num = r#"-?[0-9]+"# (*) [";"]
-    //
-    //   "%" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "*" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "+" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "-" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "/" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   ";" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //
     pub fn __state8<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
@@ -722,8 +467,15 @@ mod __parse__Stmts {
             Some((_, (6, _), _)) |
             Some((_, (7, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action15(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Num(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action13(input, __sym0);
+                let __nt = __Nonterminal::Num((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -734,70 +486,38 @@ mod __parse__Stmts {
         }
     }
 
-    // State 9
-    //   Expr = Expr ExprOp (*) Factor ["+"]
-    //   Expr = Expr ExprOp (*) Factor ["-"]
-    //   Expr = Expr ExprOp (*) Factor [";"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Factor FactorOp Term [";"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Factor = (*) Term [";"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Num = (*) r#"-?[0-9]+"# [";"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) Num [";"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = (*) "(" Expr ")" [";"]
-    //
-    //   "(" -> Shift(S7)
-    //   r#"-?[0-9]+"# -> Shift(S8)
-    //
-    //   Factor -> S24
-    //   Num -> S3
-    //   Term -> S6
     pub fn __state9<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state7(input, __lookbehind, __tokens, __sym2));
-            }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state8(input, __lookbehind, __tokens, __sym2));
+            Some((_, (0, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) |
+            Some((_, (7, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action14(input, __sym0);
+                let __nt = __Nonterminal::Num((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -806,58 +526,36 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::Factor(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state24(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1, __sym2));
-                }
-                __Nonterminal::Num(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state3(input, __lookbehind, __tokens, __lookahead, __sym2));
-                }
-                __Nonterminal::Term(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state6(input, __lookbehind, __tokens, __lookahead, __sym2));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
-        return Ok(__result);
     }
 
-    // State 10
-    //   ExprOp = "+" (*) ["("]
-    //   ExprOp = "+" (*) [r#"-?[0-9]+"#]
-    //
-    //   "(" -> Reduce(ExprOp = "+" => ActionFn(6);)
-    //   r#"-?[0-9]+"# -> Reduce(ExprOp = "+" => ActionFn(6);)
-    //
     pub fn __state10<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action6(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::ExprOp(__nt)));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -866,37 +564,57 @@ mod __parse__Stmts {
                 });
             }
         }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Factor(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state24(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state6(input, __tokens, __lookahead, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
     }
 
-    // State 11
-    //   ExprOp = "-" (*) ["("]
-    //   ExprOp = "-" (*) [r#"-?[0-9]+"#]
-    //
-    //   "(" -> Reduce(ExprOp = "-" => ActionFn(7);)
-    //   r#"-?[0-9]+"# -> Reduce(ExprOp = "-" => ActionFn(7);)
-    //
     pub fn __state11<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action7(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::ExprOp(__nt)));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -905,29 +623,40 @@ mod __parse__Stmts {
                 });
             }
         }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Factor(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state25(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state6(input, __tokens, __lookahead, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
     }
 
-    // State 12
-    //   Stmt = Expr ";" (*) [EOF]
-    //   Stmt = Expr ";" (*) ["("]
-    //   Stmt = Expr ";" (*) [r#"-?[0-9]+"#]
-    //
-    //   EOF -> Reduce(Stmt = Expr, ";" => ActionFn(3);)
-    //   "(" -> Reduce(Stmt = Expr, ";" => ActionFn(3);)
-    //   r#"-?[0-9]+"# -> Reduce(Stmt = Expr, ";" => ActionFn(3);)
-    //
     pub fn __state12<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
@@ -936,11 +665,19 @@ mod __parse__Stmts {
         match __lookahead {
             None |
             Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
+            Some((_, (8, _), _)) |
+            Some((_, (9, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
-                let __nt = super::__action3(input, __sym0, __sym1, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Stmt(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym1.2.clone();
+                let __nt = super::__action3(input, __sym0, __sym1);
+                let __nt = __Nonterminal::Stmt((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -951,60 +688,34 @@ mod __parse__Stmts {
         }
     }
 
-    // State 13
-    //   Factor = Factor FactorOp (*) Term ["%"]
-    //   Factor = Factor FactorOp (*) Term ["*"]
-    //   Factor = Factor FactorOp (*) Term ["+"]
-    //   Factor = Factor FactorOp (*) Term ["-"]
-    //   Factor = Factor FactorOp (*) Term ["/"]
-    //   Factor = Factor FactorOp (*) Term [";"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Num = (*) r#"-?[0-9]+"# [";"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) Num [";"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = (*) "(" Expr ")" [";"]
-    //
-    //   "(" -> Shift(S7)
-    //   r#"-?[0-9]+"# -> Shift(S8)
-    //
-    //   Num -> S3
-    //   Term -> S25
     pub fn __state13<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state7(input, __lookbehind, __tokens, __sym2));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym2));
             }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state8(input, __lookbehind, __tokens, __sym2));
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1014,53 +725,52 @@ mod __parse__Stmts {
             }
         }
         while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
+            let (__lookahead, __nt) = __result;
             match __nt {
                 __Nonterminal::Num(__nt) => {
                     let __sym2 = &mut Some(__nt);
-                    __result = try!(__state3(input, __lookbehind, __tokens, __lookahead, __sym2));
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym2));
                 }
                 __Nonterminal::Term(__nt) => {
                     let __sym2 = &mut Some(__nt);
-                    __result = try!(__state25(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                    __result = try!(__state26(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
                 }
                 _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
+                    return Ok((__lookahead, __nt));
                 }
             }
         }
         return Ok(__result);
     }
 
-    // State 14
-    //   FactorOp = "%" (*) ["("]
-    //   FactorOp = "%" (*) [r#"-?[0-9]+"#]
-    //
-    //   "(" -> Reduce(FactorOp = "%" => ActionFn(12);)
-    //   r#"-?[0-9]+"# -> Reduce(FactorOp = "%" => ActionFn(12);)
-    //
     pub fn __state14<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action12(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::FactorOp(__nt)));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1069,37 +779,53 @@ mod __parse__Stmts {
                 });
             }
         }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state27(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
     }
 
-    // State 15
-    //   FactorOp = "*" (*) ["("]
-    //   FactorOp = "*" (*) [r#"-?[0-9]+"#]
-    //
-    //   "(" -> Reduce(FactorOp = "*" => ActionFn(10);)
-    //   r#"-?[0-9]+"# -> Reduce(FactorOp = "*" => ActionFn(10);)
-    //
     pub fn __state15<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action10(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::FactorOp(__nt)));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state7(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state8(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state9(input, __tokens, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1108,37 +834,53 @@ mod __parse__Stmts {
                 });
             }
         }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state3(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state28(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
     }
 
-    // State 16
-    //   FactorOp = "/" (*) ["("]
-    //   FactorOp = "/" (*) [r#"-?[0-9]+"#]
-    //
-    //   "(" -> Reduce(FactorOp = "/" => ActionFn(11);)
-    //   r#"-?[0-9]+"# -> Reduce(FactorOp = "/" => ActionFn(11);)
-    //
     pub fn __state16<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Vec<Box<AstExecutor>>, usize)>,
+        __sym1: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
-        let __lookahead = match __tokens.next() {
-            Some(Ok(v)) => Some(v),
-            None => None,
-            Some(Err(e)) => return Err(e),
-        };
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
+            None |
             Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
+            Some((_, (8, _), _)) |
+            Some((_, (9, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action11(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::FactorOp(__nt)));
+                let __sym1 = __sym1.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym1.2.clone();
+                let __nt = super::__action2(input, __sym0, __sym1);
+                let __nt = __Nonterminal::Stmts((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1149,36 +891,30 @@ mod __parse__Stmts {
         }
     }
 
-    // State 17
-    //   Stmts = Stmts Stmt (*) [EOF]
-    //   Stmts = Stmts Stmt (*) ["("]
-    //   Stmts = Stmts Stmt (*) [r#"-?[0-9]+"#]
-    //
-    //   EOF -> Reduce(Stmts = Stmts, Stmt => ActionFn(2);)
-    //   "(" -> Reduce(Stmts = Stmts, Stmt => ActionFn(2);)
-    //   r#"-?[0-9]+"# -> Reduce(Stmts = Stmts, Stmt => ActionFn(2);)
-    //
     pub fn __state17<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Vec<Box<AstExecutor>>>,
-        __sym1: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+        __sym1: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            None |
-            Some((_, (1, _), _)) |
-            Some((_, (8, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __sym1 = __sym1.take().unwrap();
-                let __nt = super::__action2(input, __sym0, __sym1, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Stmts(__nt)));
+            Some((__loc1, (2, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state29(input, __tokens, __sym0, __sym1, __sym2));
+            }
+            Some((__loc1, (4, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state30(input, __tokens, __sym1, __sym2));
+            }
+            Some((__loc1, (5, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state31(input, __tokens, __sym1, __sym2));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1187,56 +923,46 @@ mod __parse__Stmts {
                 });
             }
         }
+        return Ok(__result);
     }
 
-    // State 18
-    //   Expr = Expr (*) ExprOp Factor [")"]
-    //   Expr = Expr (*) ExprOp Factor ["+"]
-    //   Expr = Expr (*) ExprOp Factor ["-"]
-    //   ExprOp = (*) "+" ["("]
-    //   ExprOp = (*) "+" [r#"-?[0-9]+"#]
-    //   ExprOp = (*) "-" ["("]
-    //   ExprOp = (*) "-" [r#"-?[0-9]+"#]
-    //   Term = "(" Expr (*) ")" ["%"]
-    //   Term = "(" Expr (*) ")" ["*"]
-    //   Term = "(" Expr (*) ")" ["+"]
-    //   Term = "(" Expr (*) ")" ["-"]
-    //   Term = "(" Expr (*) ")" ["/"]
-    //   Term = "(" Expr (*) ")" [";"]
-    //
-    //   ")" -> Shift(S27)
-    //   "+" -> Shift(S10)
-    //   "-" -> Shift(S11)
-    //
-    //   ExprOp -> S26
     pub fn __state18<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<&'input str>,
-        __sym1: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (2, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state27(input, __lookbehind, __tokens, __sym0, __sym1, __sym2));
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state32(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (4, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state10(input, __lookbehind, __tokens, __sym2));
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state33(input, __tokens, __sym0, __sym1));
             }
-            Some((_, (5, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state11(input, __lookbehind, __tokens, __sym2));
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state34(input, __tokens, __sym0, __sym1));
+            }
+            Some((_, (2, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action6(input, __sym0);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1245,80 +971,37 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::ExprOp(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state26(input, __lookbehind, __tokens, __lookahead, __sym1, __sym2));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
         return Ok(__result);
     }
 
-    // State 19
-    //   Expr = Factor (*) [")"]
-    //   Expr = Factor (*) ["+"]
-    //   Expr = Factor (*) ["-"]
-    //   Factor = Factor (*) FactorOp Term ["%"]
-    //   Factor = Factor (*) FactorOp Term [")"]
-    //   Factor = Factor (*) FactorOp Term ["*"]
-    //   Factor = Factor (*) FactorOp Term ["+"]
-    //   Factor = Factor (*) FactorOp Term ["-"]
-    //   Factor = Factor (*) FactorOp Term ["/"]
-    //   FactorOp = (*) "%" ["("]
-    //   FactorOp = (*) "%" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "*" ["("]
-    //   FactorOp = (*) "*" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "/" ["("]
-    //   FactorOp = (*) "/" [r#"-?[0-9]+"#]
-    //
-    //   "%" -> Shift(S14)
-    //   ")" -> Reduce(Expr = Factor => ActionFn(5);)
-    //   "*" -> Shift(S15)
-    //   "+" -> Reduce(Expr = Factor => ActionFn(5);)
-    //   "-" -> Reduce(Expr = Factor => ActionFn(5);)
-    //   "/" -> Shift(S16)
-    //
-    //   FactorOp -> S28
     pub fn __state19<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Value, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (0, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state14(input, __lookbehind, __tokens, __sym1));
-            }
-            Some((_, (3, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state15(input, __lookbehind, __tokens, __sym1));
-            }
-            Some((_, (6, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state16(input, __lookbehind, __tokens, __sym1));
-            }
+            Some((_, (0, _), _)) |
             Some((_, (2, _), _)) |
+            Some((_, (3, _), _)) |
             Some((_, (4, _), _)) |
-            Some((_, (5, _), _)) => {
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action5(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Expr(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action11(input, __sym0);
+                let __nt = __Nonterminal::Term((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1327,48 +1010,19 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::FactorOp(__nt) => {
-                    let __sym1 = &mut Some(__nt);
-                    __result = try!(__state28(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
-        return Ok(__result);
     }
 
-    // State 20
-    //   Term = Num (*) ["%"]
-    //   Term = Num (*) [")"]
-    //   Term = Num (*) ["*"]
-    //   Term = Num (*) ["+"]
-    //   Term = Num (*) ["-"]
-    //   Term = Num (*) ["/"]
-    //
-    //   "%" -> Reduce(Term = Num => ActionFn(13);)
-    //   ")" -> Reduce(Term = Num => ActionFn(13);)
-    //   "*" -> Reduce(Term = Num => ActionFn(13);)
-    //   "+" -> Reduce(Term = Num => ActionFn(13);)
-    //   "-" -> Reduce(Term = Num => ActionFn(13);)
-    //   "/" -> Reduce(Term = Num => ActionFn(13);)
-    //
     pub fn __state20<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<i32>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             Some((_, (0, _), _)) |
             Some((_, (2, _), _)) |
@@ -1377,8 +1031,15 @@ mod __parse__Stmts {
             Some((_, (5, _), _)) |
             Some((_, (6, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action13(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Term(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action10(input, __sym0);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1389,130 +1050,33 @@ mod __parse__Stmts {
         }
     }
 
-    // State 21
-    //   Factor = Term (*) ["%"]
-    //   Factor = Term (*) [")"]
-    //   Factor = Term (*) ["*"]
-    //   Factor = Term (*) ["+"]
-    //   Factor = Term (*) ["-"]
-    //   Factor = Term (*) ["/"]
-    //
-    //   "%" -> Reduce(Factor = Term => ActionFn(9);)
-    //   ")" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "*" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "+" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "-" -> Reduce(Factor = Term => ActionFn(9);)
-    //   "/" -> Reduce(Factor = Term => ActionFn(9);)
-    //
     pub fn __state21<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
-        match __lookahead {
-            Some((_, (0, _), _)) |
-            Some((_, (2, _), _)) |
-            Some((_, (3, _), _)) |
-            Some((_, (4, _), _)) |
-            Some((_, (5, _), _)) |
-            Some((_, (6, _), _)) => {
-                let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action9(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Factor(__nt)));
-            }
-            _ => {
-                return Err(__ParseError::UnrecognizedToken {
-                    token: __lookahead,
-                    expected: vec![],
-                });
-            }
-        }
-    }
-
-    // State 22
-    //   Expr = (*) Expr ExprOp Factor [")"]
-    //   Expr = (*) Expr ExprOp Factor ["+"]
-    //   Expr = (*) Expr ExprOp Factor ["-"]
-    //   Expr = (*) Factor [")"]
-    //   Expr = (*) Factor ["+"]
-    //   Expr = (*) Factor ["-"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term [")"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term [")"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# [")"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num [")"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" [")"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //   Term = "(" (*) Expr ")" ["%"]
-    //   Term = "(" (*) Expr ")" [")"]
-    //   Term = "(" (*) Expr ")" ["*"]
-    //   Term = "(" (*) Expr ")" ["+"]
-    //   Term = "(" (*) Expr ")" ["-"]
-    //   Term = "(" (*) Expr ")" ["/"]
-    //
-    //   "(" -> Shift(S22)
-    //   r#"-?[0-9]+"# -> Shift(S23)
-    //
-    //   Expr -> S29
-    //   Factor -> S19
-    //   Num -> S20
-    //   Term -> S21
-    pub fn __state22<
-        'input,
-        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
-    >(
-        input: &'input str,
-        __lookbehind: Option<usize>,
-        __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
-    {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
             Some(Err(e)) => return Err(e),
         };
         match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state22(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym1));
             }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym1 = &mut Some((__tok0));
-                __result = try!(__state23(input, __lookbehind, __tokens, __sym1));
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym1));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym1 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym1));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1522,58 +1086,42 @@ mod __parse__Stmts {
             }
         }
         while __sym0.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
+            let (__lookahead, __nt) = __result;
             match __nt {
                 __Nonterminal::Expr(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state29(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1));
+                    __result = try!(__state35(input, __tokens, __lookahead, __sym0, __sym1));
                 }
                 __Nonterminal::Factor(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state19(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state18(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Num(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state20(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym1));
                 }
                 __Nonterminal::Term(__nt) => {
                     let __sym1 = &mut Some(__nt);
-                    __result = try!(__state21(input, __lookbehind, __tokens, __lookahead, __sym1));
+                    __result = try!(__state20(input, __tokens, __lookahead, __sym1));
                 }
                 _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
+                    return Ok((__lookahead, __nt));
                 }
             }
         }
         return Ok(__result);
     }
 
-    // State 23
-    //   Num = r#"-?[0-9]+"# (*) ["%"]
-    //   Num = r#"-?[0-9]+"# (*) [")"]
-    //   Num = r#"-?[0-9]+"# (*) ["*"]
-    //   Num = r#"-?[0-9]+"# (*) ["+"]
-    //   Num = r#"-?[0-9]+"# (*) ["-"]
-    //   Num = r#"-?[0-9]+"# (*) ["/"]
-    //
-    //   "%" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   ")" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "*" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "+" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "-" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //   "/" -> Reduce(Num = r#"-?[0-9]+"# => ActionFn(15);)
-    //
-    pub fn __state23<
+    pub fn __state22<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
@@ -1587,8 +1135,15 @@ mod __parse__Stmts {
             Some((_, (5, _), _)) |
             Some((_, (6, _), _)) => {
                 let __sym0 = __sym0.take().unwrap();
-                let __nt = super::__action15(input, __sym0, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Num(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action13(input, __sym0);
+                let __nt = __Nonterminal::Num((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1599,60 +1154,73 @@ mod __parse__Stmts {
         }
     }
 
-    // State 24
-    //   Expr = Expr ExprOp Factor (*) ["+"]
-    //   Expr = Expr ExprOp Factor (*) ["-"]
-    //   Expr = Expr ExprOp Factor (*) [";"]
-    //   Factor = Factor (*) FactorOp Term ["%"]
-    //   Factor = Factor (*) FactorOp Term ["*"]
-    //   Factor = Factor (*) FactorOp Term ["+"]
-    //   Factor = Factor (*) FactorOp Term ["-"]
-    //   Factor = Factor (*) FactorOp Term ["/"]
-    //   Factor = Factor (*) FactorOp Term [";"]
-    //   FactorOp = (*) "%" ["("]
-    //   FactorOp = (*) "%" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "*" ["("]
-    //   FactorOp = (*) "*" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "/" ["("]
-    //   FactorOp = (*) "/" [r#"-?[0-9]+"#]
-    //
-    //   "%" -> Shift(S14)
-    //   "*" -> Shift(S15)
-    //   "+" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //   "-" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //   "/" -> Shift(S16)
-    //   ";" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //
-    //   FactorOp -> S13
+    pub fn __state23<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((_, (0, _), _)) |
+            Some((_, (2, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym0.2.clone();
+                let __nt = super::__action14(input, __sym0);
+                let __nt = __Nonterminal::Num((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+    }
+
     pub fn __state24<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-        __sym2: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (0, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state14(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state13(input, __tokens, __sym2, __sym3));
             }
-            Some((_, (3, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state15(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state14(input, __tokens, __sym2, __sym3));
             }
-            Some((_, (6, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state16(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state15(input, __tokens, __sym2, __sym3));
             }
             Some((_, (4, _), _)) |
             Some((_, (5, _), _)) |
@@ -1660,8 +1228,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action4(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Expr(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action4(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1670,50 +1245,74 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym2.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::FactorOp(__nt) => {
-                    let __sym3 = &mut Some(__nt);
-                    __result = try!(__state13(input, __lookbehind, __tokens, __lookahead, __sym2, __sym3));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
         return Ok(__result);
     }
 
-    // State 25
-    //   Factor = Factor FactorOp Term (*) ["%"]
-    //   Factor = Factor FactorOp Term (*) ["*"]
-    //   Factor = Factor FactorOp Term (*) ["+"]
-    //   Factor = Factor FactorOp Term (*) ["-"]
-    //   Factor = Factor FactorOp Term (*) ["/"]
-    //   Factor = Factor FactorOp Term (*) [";"]
-    //
-    //   "%" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "*" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "+" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "-" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "/" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   ";" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //
     pub fn __state25<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-        __sym2: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state13(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state14(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state15(input, __tokens, __sym2, __sym3));
+            }
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (7, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action5(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state26<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             Some((_, (0, _), _)) |
             Some((_, (3, _), _)) |
@@ -1724,8 +1323,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action8(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Factor(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action9(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1736,129 +1342,102 @@ mod __parse__Stmts {
         }
     }
 
-    // State 26
-    //   Expr = Expr ExprOp (*) Factor [")"]
-    //   Expr = Expr ExprOp (*) Factor ["+"]
-    //   Expr = Expr ExprOp (*) Factor ["-"]
-    //   Factor = (*) Factor FactorOp Term ["%"]
-    //   Factor = (*) Factor FactorOp Term [")"]
-    //   Factor = (*) Factor FactorOp Term ["*"]
-    //   Factor = (*) Factor FactorOp Term ["+"]
-    //   Factor = (*) Factor FactorOp Term ["-"]
-    //   Factor = (*) Factor FactorOp Term ["/"]
-    //   Factor = (*) Term ["%"]
-    //   Factor = (*) Term [")"]
-    //   Factor = (*) Term ["*"]
-    //   Factor = (*) Term ["+"]
-    //   Factor = (*) Term ["-"]
-    //   Factor = (*) Term ["/"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# [")"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num [")"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" [")"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //
-    //   "(" -> Shift(S22)
-    //   r#"-?[0-9]+"# -> Shift(S23)
-    //
-    //   Factor -> S30
-    //   Num -> S20
-    //   Term -> S21
-    pub fn __state26<
-        'input,
-        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
-    >(
-        input: &'input str,
-        __lookbehind: Option<usize>,
-        __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
-    {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
-        match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state22(input, __lookbehind, __tokens, __sym2));
-            }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state23(input, __lookbehind, __tokens, __sym2));
-            }
-            _ => {
-                return Err(__ParseError::UnrecognizedToken {
-                    token: __lookahead,
-                    expected: vec![],
-                });
-            }
-        }
-        while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::Factor(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state30(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1, __sym2));
-                }
-                __Nonterminal::Num(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state20(input, __lookbehind, __tokens, __lookahead, __sym2));
-                }
-                __Nonterminal::Term(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state21(input, __lookbehind, __tokens, __lookahead, __sym2));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
-        return Ok(__result);
-    }
-
-    // State 27
-    //   Term = "(" Expr ")" (*) ["%"]
-    //   Term = "(" Expr ")" (*) ["*"]
-    //   Term = "(" Expr ")" (*) ["+"]
-    //   Term = "(" Expr ")" (*) ["-"]
-    //   Term = "(" Expr ")" (*) ["/"]
-    //   Term = "(" Expr ")" (*) [";"]
-    //
-    //   "%" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "*" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "+" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "-" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "/" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   ";" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //
     pub fn __state27<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-        __sym1: &mut Option<Box<AstExecutor>>,
-        __sym2: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((_, (0, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) |
+            Some((_, (7, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action7(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+    }
+
+    pub fn __state28<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((_, (0, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) |
+            Some((_, (7, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action8(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+    }
+
+    pub fn __state29<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+        __sym1: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym2: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
@@ -1874,8 +1453,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action14(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Term(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action12(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Term((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -1886,212 +1472,349 @@ mod __parse__Stmts {
         }
     }
 
-    // State 28
-    //   Factor = Factor FactorOp (*) Term ["%"]
-    //   Factor = Factor FactorOp (*) Term [")"]
-    //   Factor = Factor FactorOp (*) Term ["*"]
-    //   Factor = Factor FactorOp (*) Term ["+"]
-    //   Factor = Factor FactorOp (*) Term ["-"]
-    //   Factor = Factor FactorOp (*) Term ["/"]
-    //   Num = (*) r#"-?[0-9]+"# ["%"]
-    //   Num = (*) r#"-?[0-9]+"# [")"]
-    //   Num = (*) r#"-?[0-9]+"# ["*"]
-    //   Num = (*) r#"-?[0-9]+"# ["+"]
-    //   Num = (*) r#"-?[0-9]+"# ["-"]
-    //   Num = (*) r#"-?[0-9]+"# ["/"]
-    //   Term = (*) Num ["%"]
-    //   Term = (*) Num [")"]
-    //   Term = (*) Num ["*"]
-    //   Term = (*) Num ["+"]
-    //   Term = (*) Num ["-"]
-    //   Term = (*) Num ["/"]
-    //   Term = (*) "(" Expr ")" ["%"]
-    //   Term = (*) "(" Expr ")" [")"]
-    //   Term = (*) "(" Expr ")" ["*"]
-    //   Term = (*) "(" Expr ")" ["+"]
-    //   Term = (*) "(" Expr ")" ["-"]
-    //   Term = (*) "(" Expr ")" ["/"]
-    //
-    //   "(" -> Shift(S22)
-    //   r#"-?[0-9]+"# -> Shift(S23)
-    //
-    //   Num -> S20
-    //   Term -> S31
-    pub fn __state28<
-        'input,
-        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
-    >(
-        input: &'input str,
-        __lookbehind: Option<usize>,
-        __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
-    {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
-        match __lookahead {
-            Some((_, (1, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state22(input, __lookbehind, __tokens, __sym2));
-            }
-            Some((_, (8, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state23(input, __lookbehind, __tokens, __sym2));
-            }
-            _ => {
-                return Err(__ParseError::UnrecognizedToken {
-                    token: __lookahead,
-                    expected: vec![],
-                });
-            }
-        }
-        while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::Num(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state20(input, __lookbehind, __tokens, __lookahead, __sym2));
-                }
-                __Nonterminal::Term(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state31(input, __lookbehind, __tokens, __lookahead, __sym0, __sym1, __sym2));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
-        return Ok(__result);
-    }
-
-    // State 29
-    //   Expr = Expr (*) ExprOp Factor [")"]
-    //   Expr = Expr (*) ExprOp Factor ["+"]
-    //   Expr = Expr (*) ExprOp Factor ["-"]
-    //   ExprOp = (*) "+" ["("]
-    //   ExprOp = (*) "+" [r#"-?[0-9]+"#]
-    //   ExprOp = (*) "-" ["("]
-    //   ExprOp = (*) "-" [r#"-?[0-9]+"#]
-    //   Term = "(" Expr (*) ")" ["%"]
-    //   Term = "(" Expr (*) ")" [")"]
-    //   Term = "(" Expr (*) ")" ["*"]
-    //   Term = "(" Expr (*) ")" ["+"]
-    //   Term = "(" Expr (*) ")" ["-"]
-    //   Term = "(" Expr (*) ")" ["/"]
-    //
-    //   ")" -> Shift(S32)
-    //   "+" -> Shift(S10)
-    //   "-" -> Shift(S11)
-    //
-    //   ExprOp -> S26
-    pub fn __state29<
-        'input,
-        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
-    >(
-        input: &'input str,
-        __lookbehind: Option<usize>,
-        __tokens: &mut __TOKENS,
-        __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<&'input str>,
-        __sym1: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
-    {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
-        match __lookahead {
-            Some((_, (2, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state32(input, __lookbehind, __tokens, __sym0, __sym1, __sym2));
-            }
-            Some((_, (4, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state10(input, __lookbehind, __tokens, __sym2));
-            }
-            Some((_, (5, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym2 = &mut Some((__tok0));
-                __result = try!(__state11(input, __lookbehind, __tokens, __sym2));
-            }
-            _ => {
-                return Err(__ParseError::UnrecognizedToken {
-                    token: __lookahead,
-                    expected: vec![],
-                });
-            }
-        }
-        while __sym1.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::ExprOp(__nt) => {
-                    let __sym2 = &mut Some(__nt);
-                    __result = try!(__state26(input, __lookbehind, __tokens, __lookahead, __sym1, __sym2));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
-            }
-        }
-        return Ok(__result);
-    }
-
-    // State 30
-    //   Expr = Expr ExprOp Factor (*) [")"]
-    //   Expr = Expr ExprOp Factor (*) ["+"]
-    //   Expr = Expr ExprOp Factor (*) ["-"]
-    //   Factor = Factor (*) FactorOp Term ["%"]
-    //   Factor = Factor (*) FactorOp Term [")"]
-    //   Factor = Factor (*) FactorOp Term ["*"]
-    //   Factor = Factor (*) FactorOp Term ["+"]
-    //   Factor = Factor (*) FactorOp Term ["-"]
-    //   Factor = Factor (*) FactorOp Term ["/"]
-    //   FactorOp = (*) "%" ["("]
-    //   FactorOp = (*) "%" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "*" ["("]
-    //   FactorOp = (*) "*" [r#"-?[0-9]+"#]
-    //   FactorOp = (*) "/" ["("]
-    //   FactorOp = (*) "/" [r#"-?[0-9]+"#]
-    //
-    //   "%" -> Shift(S14)
-    //   ")" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //   "*" -> Shift(S15)
-    //   "+" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //   "-" -> Reduce(Expr = Expr, ExprOp, Factor => ActionFn(4);)
-    //   "/" -> Shift(S16)
-    //
-    //   FactorOp -> S28
     pub fn __state30<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Factor(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state36(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state20(input, __tokens, __lookahead, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state31<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Factor(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state37(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state20(input, __tokens, __lookahead, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state32<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state38(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state33<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state39(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state34<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let __lookahead = match __tokens.next() {
+            Some(Ok(v)) => Some(v),
+            None => None,
+            Some(Err(e)) => return Err(e),
+        };
+        match __lookahead {
+            Some((__loc1, (1, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state21(input, __tokens, __sym2));
+            }
+            Some((__loc1, (8, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state22(input, __tokens, __sym2));
+            }
+            Some((__loc1, (9, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state23(input, __tokens, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        while __sym1.is_some() {
+            let (__lookahead, __nt) = __result;
+            match __nt {
+                __Nonterminal::Num(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state19(input, __tokens, __lookahead, __sym2));
+                }
+                __Nonterminal::Term(__nt) => {
+                    let __sym2 = &mut Some(__nt);
+                    __result = try!(__state40(input, __tokens, __lookahead, __sym0, __sym1, __sym2));
+                }
+                _ => {
+                    return Ok((__lookahead, __nt));
+                }
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state35<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-        __sym2: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+        __sym1: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
-            Some((_, (0, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state14(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (2, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state41(input, __tokens, __sym0, __sym1, __sym2));
             }
-            Some((_, (3, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state15(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (4, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state30(input, __tokens, __sym1, __sym2));
             }
-            Some((_, (6, __tok0), __loc)) => {
-                let mut __lookbehind = Some(__loc);
-                let mut __sym3 = &mut Some((__tok0));
-                __result = try!(__state16(input, __lookbehind, __tokens, __sym3));
+            Some((__loc1, (5, __tok0), __loc2)) => {
+                let mut __sym2 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state31(input, __tokens, __sym1, __sym2));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+        return Ok(__result);
+    }
+
+    pub fn __state36<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state32(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state33(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state34(input, __tokens, __sym2, __sym3));
             }
             Some((_, (2, _), _)) |
             Some((_, (4, _), _)) |
@@ -2099,8 +1822,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action4(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Expr(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action4(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -2109,50 +1839,74 @@ mod __parse__Stmts {
                 });
             }
         }
-        while __sym2.is_some() {
-            let (__lookbehind, __lookahead, __nt) = __result;
-            match __nt {
-                __Nonterminal::FactorOp(__nt) => {
-                    let __sym3 = &mut Some(__nt);
-                    __result = try!(__state28(input, __lookbehind, __tokens, __lookahead, __sym2, __sym3));
-                }
-                _ => {
-                    return Ok((__lookbehind, __lookahead, __nt));
-                }
+        return Ok(__result);
+    }
+
+    pub fn __state37<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((__loc1, (0, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state32(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (3, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state33(input, __tokens, __sym2, __sym3));
+            }
+            Some((__loc1, (6, __tok0), __loc2)) => {
+                let mut __sym3 = &mut Some((__loc1, (__tok0), __loc2));
+                __result = try!(__state34(input, __tokens, __sym2, __sym3));
+            }
+            Some((_, (2, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action5(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Expr((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
             }
         }
         return Ok(__result);
     }
 
-    // State 31
-    //   Factor = Factor FactorOp Term (*) ["%"]
-    //   Factor = Factor FactorOp Term (*) [")"]
-    //   Factor = Factor FactorOp Term (*) ["*"]
-    //   Factor = Factor FactorOp Term (*) ["+"]
-    //   Factor = Factor FactorOp Term (*) ["-"]
-    //   Factor = Factor FactorOp Term (*) ["/"]
-    //
-    //   "%" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   ")" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "*" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "+" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "-" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //   "/" -> Reduce(Factor = Factor, FactorOp, Term => ActionFn(8);)
-    //
-    pub fn __state31<
+    pub fn __state38<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
         __lookahead: Option<(usize, (usize, &'input str), usize)>,
-        __sym0: &mut Option<Box<AstExecutor>>,
-        __sym1: &mut Option<BinaryOp>,
-        __sym2: &mut Option<Box<AstExecutor>>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         match __lookahead {
             Some((_, (0, _), _)) |
             Some((_, (2, _), _)) |
@@ -2163,8 +1917,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action8(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Factor(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action9(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -2175,34 +1936,102 @@ mod __parse__Stmts {
         }
     }
 
-    // State 32
-    //   Term = "(" Expr ")" (*) ["%"]
-    //   Term = "(" Expr ")" (*) [")"]
-    //   Term = "(" Expr ")" (*) ["*"]
-    //   Term = "(" Expr ")" (*) ["+"]
-    //   Term = "(" Expr ")" (*) ["-"]
-    //   Term = "(" Expr ")" (*) ["/"]
-    //
-    //   "%" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   ")" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "*" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "+" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "-" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //   "/" -> Reduce(Term = "(", Expr, ")" => ActionFn(14);)
-    //
-    pub fn __state32<
+    pub fn __state39<
         'input,
         __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
     >(
         input: &'input str,
-        __lookbehind: Option<usize>,
         __tokens: &mut __TOKENS,
-        __sym0: &mut Option<&'input str>,
-        __sym1: &mut Option<Box<AstExecutor>>,
-        __sym2: &mut Option<&'input str>,
-    ) -> Result<(Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
     {
-        let mut __result: (Option<usize>, Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((_, (0, _), _)) |
+            Some((_, (2, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action7(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+    }
+
+    pub fn __state40<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __lookahead: Option<(usize, (usize, &'input str), usize)>,
+        __sym0: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym1: &mut Option<(usize, &'input str, usize)>,
+        __sym2: &mut Option<(usize, Box<AstExecutor>, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
+        match __lookahead {
+            Some((_, (0, _), _)) |
+            Some((_, (2, _), _)) |
+            Some((_, (3, _), _)) |
+            Some((_, (4, _), _)) |
+            Some((_, (5, _), _)) |
+            Some((_, (6, _), _)) => {
+                let __sym0 = __sym0.take().unwrap();
+                let __sym1 = __sym1.take().unwrap();
+                let __sym2 = __sym2.take().unwrap();
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action8(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Factor((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
+            }
+            _ => {
+                return Err(__ParseError::UnrecognizedToken {
+                    token: __lookahead,
+                    expected: vec![],
+                });
+            }
+        }
+    }
+
+    pub fn __state41<
+        'input,
+        __TOKENS: Iterator<Item=Result<(usize, (usize, &'input str), usize),__ParseError<usize,(usize, &'input str),()>>>,
+    >(
+        input: &'input str,
+        __tokens: &mut __TOKENS,
+        __sym0: &mut Option<(usize, &'input str, usize)>,
+        __sym1: &mut Option<(usize, Box<AstExecutor>, usize)>,
+        __sym2: &mut Option<(usize, &'input str, usize)>,
+    ) -> Result<(Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>), __ParseError<usize,(usize, &'input str),()>>
+    {
+        let mut __result: (Option<(usize, (usize, &'input str), usize)>, __Nonterminal<>);
         let __lookahead = match __tokens.next() {
             Some(Ok(v)) => Some(v),
             None => None,
@@ -2218,8 +2047,15 @@ mod __parse__Stmts {
                 let __sym0 = __sym0.take().unwrap();
                 let __sym1 = __sym1.take().unwrap();
                 let __sym2 = __sym2.take().unwrap();
-                let __nt = super::__action14(input, __sym0, __sym1, __sym2, &__lookbehind, &__lookahead);
-                return Ok((__lookbehind, __lookahead, __Nonterminal::Term(__nt)));
+                let __start = __sym0.0.clone();
+                let __end = __sym2.2.clone();
+                let __nt = super::__action12(input, __sym0, __sym1, __sym2);
+                let __nt = __Nonterminal::Term((
+                    __start,
+                    __nt,
+                    __end,
+                ));
+                return Ok((__lookahead, __nt));
             }
             _ => {
                 return Err(__ParseError::UnrecognizedToken {
@@ -2247,93 +2083,48 @@ mod __intern_token {
             match __current_state {
                 0 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
-                        '%' => {
+                    match __ch as u32 {
+                        37 => /* '%' */ {
                             __current_match = Some((0, __index + 1));
                             __current_state = 1;
                             continue;
                         }
-                        '(' => {
+                        40 => /* '(' */ {
                             __current_match = Some((1, __index + 1));
                             __current_state = 2;
                             continue;
                         }
-                        ')' => {
+                        41 => /* ')' */ {
                             __current_match = Some((2, __index + 1));
                             __current_state = 3;
                             continue;
                         }
-                        '*' => {
+                        42 => /* '*' */ {
                             __current_match = Some((3, __index + 1));
                             __current_state = 4;
                             continue;
                         }
-                        '+' => {
+                        43 => /* '+' */ {
                             __current_match = Some((4, __index + 1));
                             __current_state = 5;
                             continue;
                         }
-                        '-' => {
+                        45 => /* '-' */ {
                             __current_match = Some((5, __index + 1));
                             __current_state = 6;
                             continue;
                         }
-                        '/' => {
+                        47 => /* '/' */ {
                             __current_match = Some((6, __index + 1));
                             __current_state = 7;
                             continue;
                         }
-                        '0' => {
-                            __current_match = Some((8, __index + 1));
+                        48 ... 57 => {
+                            __current_match = Some((9, __index + __ch.len_utf8()));
                             __current_state = 8;
                             continue;
                         }
-                        '1' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '2' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '3' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '4' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '5' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '6' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '7' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '8' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '9' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        ';' => {
+                        59 => /* ';' */ {
                             __current_match = Some((7, __index + 1));
                             __current_state = 9;
                             continue;
@@ -2345,7 +2136,7 @@ mod __intern_token {
                 }
                 1 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2353,7 +2144,7 @@ mod __intern_token {
                 }
                 2 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2361,7 +2152,7 @@ mod __intern_token {
                 }
                 3 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2369,7 +2160,7 @@ mod __intern_token {
                 }
                 4 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2377,7 +2168,7 @@ mod __intern_token {
                 }
                 5 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2385,55 +2176,10 @@ mod __intern_token {
                 }
                 6 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
-                        '0' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '1' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '2' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '3' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '4' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '5' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '6' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '7' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '8' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '9' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
+                    match __ch as u32 {
+                        48 ... 57 => {
+                            __current_match = Some((8, __index + __ch.len_utf8()));
+                            __current_state = 11;
                             continue;
                         }
                         _ => {
@@ -2443,7 +2189,7 @@ mod __intern_token {
                 }
                 7 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2451,55 +2197,10 @@ mod __intern_token {
                 }
                 8 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
-                        '0' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '1' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '2' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '3' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '4' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '5' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '6' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '7' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '8' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
-                            continue;
-                        }
-                        '9' => {
-                            __current_match = Some((8, __index + 1));
-                            __current_state = 8;
+                    match __ch as u32 {
+                        48 ... 57 => {
+                            __current_match = Some((9, __index + __ch.len_utf8()));
+                            __current_state = 12;
                             continue;
                         }
                         _ => {
@@ -2509,7 +2210,7 @@ mod __intern_token {
                 }
                 9 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
                         _ => {
                             return __current_match;
                         }
@@ -2517,7 +2218,46 @@ mod __intern_token {
                 }
                 10 => {
                     let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
-                    match __ch {
+                    match __ch as u32 {
+                        _ => {
+                            return __current_match;
+                        }
+                    }
+                }
+                11 => {
+                    let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
+                    match __ch as u32 {
+                        48 ... 57 => {
+                            __current_match = Some((8, __index + __ch.len_utf8()));
+                            __current_state = 13;
+                            continue;
+                        }
+                        _ => {
+                            return __current_match;
+                        }
+                    }
+                }
+                12 => {
+                    let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
+                    match __ch as u32 {
+                        48 ... 57 => {
+                            __current_match = Some((9, __index + __ch.len_utf8()));
+                            __current_state = 12;
+                            continue;
+                        }
+                        _ => {
+                            return __current_match;
+                        }
+                    }
+                }
+                13 => {
+                    let (__index, __ch) = match __chars.next() { Some(p) => p, None => return __current_match };
+                    match __ch as u32 {
+                        48 ... 57 => {
+                            __current_match = Some((8, __index + __ch.len_utf8()));
+                            __current_state = 13;
+                            continue;
+                        }
                         _ => {
                             return __current_match;
                         }
@@ -2568,9 +2308,7 @@ pub fn __action0<
     'input,
 >(
     input: &'input str,
-    __0: Vec<Box<AstExecutor>>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, __0, _): (usize, Vec<Box<AstExecutor>>, usize),
 ) -> Vec<Box<AstExecutor>>
 {
     (__0)
@@ -2580,9 +2318,7 @@ pub fn __action1<
     'input,
 >(
     input: &'input str,
-    __0: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, __0, _): (usize, Box<AstExecutor>, usize),
 ) -> Vec<Box<AstExecutor>>
 {
     vec![__0]
@@ -2592,10 +2328,8 @@ pub fn __action2<
     'input,
 >(
     input: &'input str,
-    l: Vec<Box<AstExecutor>>,
-    r: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, l, _): (usize, Vec<Box<AstExecutor>>, usize),
+    (_, r, _): (usize, Box<AstExecutor>, usize),
 ) -> Vec<Box<AstExecutor>>
 {
     {
@@ -2610,10 +2344,8 @@ pub fn __action3<
     'input,
 >(
     input: &'input str,
-    e: Box<AstExecutor>,
-    _: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, e, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
 ) -> Box<AstExecutor>
 {
     e
@@ -2623,150 +2355,122 @@ pub fn __action4<
     'input,
 >(
     input: &'input str,
-    __0: Box<AstExecutor>,
-    __1: BinaryOp,
-    __2: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, e, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+    (_, f, _): (usize, Box<AstExecutor>, usize),
 ) -> Box<AstExecutor>
 {
-    Box::new(BinaryOperation::new(__0, __1, __2))
+    Box::new(BinOpAdd::new(e, f))
 }
 
 pub fn __action5<
     'input,
 >(
     input: &'input str,
-    __0: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, e, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+    (_, f, _): (usize, Box<AstExecutor>, usize),
 ) -> Box<AstExecutor>
 {
-    (__0)
+    Box::new(BinOpAdd::new(e, f))
 }
 
 pub fn __action6<
     'input,
 >(
     input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> BinaryOp
+    (_, __0, _): (usize, Box<AstExecutor>, usize),
+) -> Box<AstExecutor>
 {
-    BinaryOp::Add
+    (__0)
 }
 
 pub fn __action7<
     'input,
 >(
     input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> BinaryOp
+    (_, f, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+    (_, t, _): (usize, Box<AstExecutor>, usize),
+) -> Box<AstExecutor>
 {
-    BinaryOp::Sub
+    Box::new(BinOpAdd::new(f, t))
 }
 
 pub fn __action8<
     'input,
 >(
     input: &'input str,
-    __0: Box<AstExecutor>,
-    __1: BinaryOp,
-    __2: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, f, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+    (_, t, _): (usize, Box<AstExecutor>, usize),
 ) -> Box<AstExecutor>
 {
-    Box::new(BinaryOperation::new(__0, __1, __2))
+    Box::new(BinOpAdd::new(f, t))
 }
 
 pub fn __action9<
     'input,
 >(
     input: &'input str,
-    __0: Box<AstExecutor>,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
+    (_, f, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+    (_, t, _): (usize, Box<AstExecutor>, usize),
 ) -> Box<AstExecutor>
 {
-    (__0)
+    Box::new(BinOpAdd::new(f, t))
 }
 
 pub fn __action10<
     'input,
 >(
     input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> BinaryOp
+    (_, __0, _): (usize, Box<AstExecutor>, usize),
+) -> Box<AstExecutor>
 {
-    BinaryOp::Mul
+    (__0)
 }
 
 pub fn __action11<
     'input,
 >(
     input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> BinaryOp
+    (_, __0, _): (usize, Value, usize),
+) -> Box<AstExecutor>
 {
-    BinaryOp::Div
+    Box::new(__0)
 }
 
 pub fn __action12<
     'input,
 >(
     input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> BinaryOp
+    (_, _, _): (usize, &'input str, usize),
+    (_, __0, _): (usize, Box<AstExecutor>, usize),
+    (_, _, _): (usize, &'input str, usize),
+) -> Box<AstExecutor>
 {
-    BinaryOp::Mod
+    (__0)
 }
 
 pub fn __action13<
     'input,
 >(
     input: &'input str,
-    __0: i32,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> Box<AstExecutor>
+    (_, __0, _): (usize, &'input str, usize),
+) -> Value
 {
-    Box::new(__0)
+    Value::Ni8(i8::from_str(__0).unwrap())
 }
 
 pub fn __action14<
     'input,
 >(
     input: &'input str,
-    _: &'input str,
-    __0: Box<AstExecutor>,
-    _: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> Box<AstExecutor>
+    (_, __0, _): (usize, &'input str, usize),
+) -> Value
 {
-    (__0)
-}
-
-pub fn __action15<
-    'input,
->(
-    input: &'input str,
-    __0: &'input str,
-    __lookbehind: &Option<usize>,
-    __lookahead: &Option<(usize, (usize, &'input str), usize)>,
-) -> i32
-{
-    i32::from_str(__0).unwrap()
+    Value::Nu8(u8::from_str(__0).unwrap())
 }
 
 pub trait __ToTriple<'input, > {

@@ -1,6 +1,7 @@
 use std::str::FromStr;
-use binaryoperation::{BinaryOperation, BinaryOp};
+use binaryoperation::BinOpAdd;
 use ast_executor::AstExecutor;
+use value::Value;
 
 grammar;
 
@@ -19,26 +20,21 @@ Stmt: Box<AstExecutor> = {
 };
 
 Expr: Box<AstExecutor> = {
-    Expr ExprOp Factor =>
-    	 Box::new(BinaryOperation::new(<>)),
+    <e:Expr> "+" <f:Factor> =>
+    	 Box::new(BinOpAdd::new(e, f)),
+    <e:Expr> "-" <f:Factor> =>
+    	 Box::new(BinOpAdd::new(e, f)),
     Factor
 };
 
-ExprOp: BinaryOp = {
-    "+" => BinaryOp::Add,
-    "-" => BinaryOp::Sub
-};
-
 Factor: Box<AstExecutor> = {
-    Factor FactorOp Term =>
-    	 Box::new(BinaryOperation::new(<>)),
+    <f:Factor> "*" <t:Term> =>
+    	 Box::new(BinOpAdd::new(f, t)),
+    <f:Factor> "/" <t:Term> =>
+    	 Box::new(BinOpAdd::new(f, t)),
+    <f:Factor> "%" <t:Term> =>
+    	 Box::new(BinOpAdd::new(f, t)),
     Term
-};
-
-FactorOp: BinaryOp = {
-    "*" => BinaryOp::Mul,
-    "/" => BinaryOp::Div,
-    "%" => BinaryOp::Mod
 };
 
 Term: Box<AstExecutor> = {
@@ -46,6 +42,7 @@ Term: Box<AstExecutor> = {
     "(" <Expr> ")"
 };
 
-Num: i32 = {
-     r"-?[0-9]+" => i32::from_str(<>).unwrap()
+Num: Value = {
+     r"-[0-9]+" => Value::Ni8(i8::from_str(<>).unwrap()),
+     r"[0-9]+" => Value::Nu8(u8::from_str(<>).unwrap())
 };
