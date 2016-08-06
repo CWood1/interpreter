@@ -2,6 +2,7 @@ pub mod parser;
 pub mod value;
 pub mod binopadd;
 pub mod binopsub;
+pub mod binopmul;
 pub mod ast_executor;
 
 use ast_executor::AstExecutor;

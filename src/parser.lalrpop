@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use binopadd::BinOpAdd;
 use binopsub::BinOpSub;
+use binopmul::BinOpMul;
 use ast_executor::AstExecutor;
 use value::Value;
 
@@ -30,7 +31,7 @@ Expr: Box<AstExecutor> = {
 
 Factor: Box<AstExecutor> = {
     <f:Factor> "*" <t:Term> =>
-    	 Box::new(BinOpAdd::new(f, t)),
+    	 Box::new(BinOpMul::new(f, t)),
     <f:Factor> "/" <t:Term> =>
     	 Box::new(BinOpAdd::new(f, t)),
     <f:Factor> "%" <t:Term> =>
@@ -40,10 +41,16 @@ Factor: Box<AstExecutor> = {
 
 Term: Box<AstExecutor> = {
     Num => Box::new(<>),
+    Bool => Box::new(<>),
     "(" <Expr> ")"
 };
 
 Num: Value = {
      r"-[0-9]+" => Value::Ni8(i8::from_str(<>).unwrap()),
      r"[0-9]+" => Value::Nu8(u8::from_str(<>).unwrap())
+};
+
+Bool: Value = {
+     r"true" => Value::Bool(true),
+     r"false" => Value::Bool(false)
 };

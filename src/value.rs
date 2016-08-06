@@ -9,6 +9,7 @@ pub enum Value {
     Ni16(i16),
     Nu32(u32),
     Ni32(i32),
+    Bool(bool),
     None,
 }
 
@@ -27,6 +28,7 @@ impl fmt::Display for Value {
             &Value::Ni16(n) => write!(f, "{}", n),
             &Value::Nu32(n) => write!(f, "{}", n),
             &Value::Ni32(n) => write!(f, "{}", n),
+            &Value::Bool(b) => write!(f, "{}", b),
             &Value::None => write!(f, ""),
         }
     }
