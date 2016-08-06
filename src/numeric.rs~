@@ -1,7 +1,0 @@
-use ast_executor::AstExecutor;
-
-impl AstExecutor for i32 {
-    fn execute(&self) -> i32 {
-        *self
-    }
-}

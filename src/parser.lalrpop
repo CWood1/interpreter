@@ -1,5 +1,6 @@
 use std::str::FromStr;
-use binaryoperation::BinOpAdd;
+use binopadd::BinOpAdd;
+use binopsub::BinOpSub;
 use ast_executor::AstExecutor;
 use value::Value;
 
@@ -23,7 +24,7 @@ Expr: Box<AstExecutor> = {
     <e:Expr> "+" <f:Factor> =>
     	 Box::new(BinOpAdd::new(e, f)),
     <e:Expr> "-" <f:Factor> =>
-    	 Box::new(BinOpAdd::new(e, f)),
+    	 Box::new(BinOpSub::new(e, f)),
     Factor
 };
 

@@ -1,7 +1,8 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 use std::str::FromStr;
-use binaryoperation::BinOpAdd;
+use binopadd::BinOpAdd;
+use binopsub::BinOpSub;
 use ast_executor::AstExecutor;
 use value::Value;
 extern crate lalrpop_util as __lalrpop_util;
@@ -11,7 +12,8 @@ mod __parse__Stmts {
     #![allow(non_snake_case, non_camel_case_types, unused_mut, unused_variables, unused_imports)]
 
     use std::str::FromStr;
-    use binaryoperation::BinOpAdd;
+    use binopadd::BinOpAdd;
+    use binopsub::BinOpSub;
     use ast_executor::AstExecutor;
     use value::Value;
     extern crate lalrpop_util as __lalrpop_util;
@@ -2372,7 +2374,7 @@ pub fn __action5<
     (_, f, _): (usize, Box<AstExecutor>, usize),
 ) -> Box<AstExecutor>
 {
-    Box::new(BinOpAdd::new(e, f))
+    Box::new(BinOpSub::new(e, f))
 }
 
 pub fn __action6<
