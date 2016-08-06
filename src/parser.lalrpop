@@ -17,8 +17,13 @@ pub Stmts: Vec<Box<AstExecutor>> = {
     }
 };
 
+Block: Vec<Box<AstExecutor>> = {
+    "{" <s:Stmts> "}" => s
+};
+
 Stmt: Box<AstExecutor> = {
-    <e:Expr> ";" => e
+    <e:Expr> ";" => e,
+    Block => Box::new(<>)
 };
 
 Expr: Box<AstExecutor> = {
