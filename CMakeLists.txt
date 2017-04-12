@@ -8,6 +8,8 @@ BISON_TARGET(RustParser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 FLEX_TARGET(RustScanner lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.c)
 ADD_FLEX_BISON_DEPENDENCY(RustScanner RustParser)
 
+set(CMAKE_C_FLAGS "-L. -linterpreter")
+
 include_directories(include)
 
 add_executable(rustint
