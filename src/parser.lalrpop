@@ -7,7 +7,11 @@ use value::Value;
 
 grammar;
 
-pub Stmts: Vec<Box<AstExecutor>> = {
+pub Prog: Vec<Box<AstExecutor>> = {
+   Stmts => <>
+};
+
+Stmts: Vec<Box<AstExecutor>> = {
     Stmt => vec![<>],
     <l:Stmts> <r:Stmt> => {
     	let mut result: Vec<Box<AstExecutor>> = vec![];

@@ -42,6 +42,6 @@ fn main() {
                            display,
                            Error::description(&why)),
         Ok(_) => println!("{}",
-                          parser::parse_Stmts(&s[..]).unwrap().execute()),
+                          parser::parse_Prog(&s[..]).unwrap().execute()),
     }
 }
