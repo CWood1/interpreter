@@ -1,3 +1,4 @@
+
 # Editor backup files
 .#*
 *~
@@ -37,3 +38,9 @@
 
 # Build directory
 build/
+
+# Rust stuff
+target
+Cargo.lock
+*~
+
